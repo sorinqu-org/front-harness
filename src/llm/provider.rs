@@ -5,6 +5,7 @@ use crate::llm::reasoning::ReasoningLevel;
 use crate::llm::streaming::{parse_sse_line, StreamChunk};
 use anyhow::{bail, Result};
 use futures_util::StreamExt;
+use reqwest::header::{HeaderMap, HeaderValue};
 use reqwest::Client;
 use serde_json::{json, Value};
 use std::time::Duration;
@@ -17,8 +18,16 @@ pub struct LlmProvider {
 
 impl LlmProvider {
     pub fn new(config: LlmConfig) -> Self {
+        let mut default_headers = HeaderMap::new();
+        default_headers.insert("User-Agent", HeaderValue::from_static("claude-cli/1.0.108 (external, cli)"));
+        default_headers.insert("anthropic-version", HeaderValue::from_static("2023-06-01"));
+        default_headers.insert("anthropic-beta", HeaderValue::from_static("claude-code-20250219,oauth-2025-04-20"));
+        default_headers.insert("anthropic-dangerous-direct-browser-access", HeaderValue::from_static("true"));
+        default_headers.insert("x-app", HeaderValue::from_static("cli"));
+
         let client = Client::builder()
             .timeout(Duration::from_secs(config.timeout_seconds))
+            .default_headers(default_headers)
             .build()
             .unwrap_or_default();
         Self { config, client }

@@ -1,4 +1,5 @@
 use anyhow::Result;
+use reqwest::header::{HeaderMap, HeaderValue};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
@@ -17,7 +18,14 @@ struct ModelsResponse {
 }
 
 pub async fn discover_models(base_url: &str, api_key: &str) -> Result<Vec<ModelInfo>> {
-    let client = Client::new();
+    let mut default_headers = HeaderMap::new();
+    default_headers.insert("User-Agent", HeaderValue::from_static("claude-cli/1.0.108 (external, cli)"));
+    default_headers.insert("anthropic-version", HeaderValue::from_static("2023-06-01"));
+    default_headers.insert("anthropic-beta", HeaderValue::from_static("claude-code-20250219,oauth-2025-04-20"));
+    default_headers.insert("anthropic-dangerous-direct-browser-access", HeaderValue::from_static("true"));
+    default_headers.insert("x-app", HeaderValue::from_static("cli"));
+
+    let client = Client::builder().default_headers(default_headers).build().unwrap_or_default();
     let url = format!("{}/models", base_url.trim_end_matches('/'));
 
     let mut req = client.get(&url);
