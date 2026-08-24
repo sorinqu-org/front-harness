@@ -18,6 +18,7 @@ pub enum ActiveModal {
     Assets,
     Memory,
     Config,
+    NewRun,
 }
 
 #[derive(Debug, Clone)]
@@ -56,6 +57,12 @@ pub struct TuiState {
     pub is_editing_field: bool,
     pub config_edit_buffer: String,
     pub config_status_message: Option<String>,
+
+    // New Run / Prompt modal state
+    pub run_target_url: String,
+    pub run_goal_prompt: String,
+    pub run_input_focus: usize, // 0 = URL, 1 = Prompt
+    pub should_trigger_pipeline: Option<(String, String)>,
 }
 
 impl TuiState {
@@ -144,6 +151,10 @@ impl TuiState {
             is_editing_field: false,
             config_edit_buffer: String::new(),
             config_status_message: None,
+            run_target_url: "https://as-chelyabinsk.ru/".into(),
+            run_goal_prompt: "Повысить читаемость и конверсию, внедрить современные анимации GSAP и адаптивные Bento-секции".into(),
+            run_input_focus: 0,
+            should_trigger_pipeline: None,
         }
     }
 
@@ -229,10 +240,7 @@ impl TuiState {
             }
         }
 
-        // Save global config yaml
         let _ = settings.save_global_config();
-
-        // Also save to .env in current workspace
         let env_path = settings.workspace_dir.join(".env");
         let _ = std::fs::write(&env_path, env_content);
 

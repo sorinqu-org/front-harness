@@ -1,9 +1,11 @@
+use crate::agents::PipelineOrchestrator;
+use crate::config::settings::Settings;
 use crate::core::event_bus::EventBus;
 use crate::tui::keybindings::KeybindingHandler;
 use crate::tui::state::{ActiveModal, TuiState};
 use crate::tui::widgets::{
     render_asset_modal, render_config_modal, render_dag_tree, render_diff_modal, render_help_modal,
-    render_log_modal, render_memory_modal, render_statusline, render_stream_view,
+    render_log_modal, render_memory_modal, render_new_run_modal, render_statusline, render_stream_view,
 };
 use anyhow::Result;
 use crossterm::{
@@ -63,6 +65,7 @@ impl TuiApp {
                 // Render Modals
                 match self.state.active_modal {
                     ActiveModal::Help => render_help_modal(f),
+                    ActiveModal::NewRun => render_new_run_modal(f, &self.state),
                     ActiveModal::Config => render_config_modal(f, &self.state),
                     ActiveModal::Diff => render_diff_modal(f, ""),
                     ActiveModal::Logs => render_log_modal(f, &self.state),
@@ -74,6 +77,16 @@ impl TuiApp {
 
             if self.state.should_quit {
                 break;
+            }
+
+            // Check if a new pipeline run was triggered from within the TUI
+            if let Some((target_url, goal_prompt)) = self.state.should_trigger_pipeline.take() {
+                let bus = self.event_bus.clone();
+                tokio::spawn(async move {
+                    let settings = Settings::load().unwrap_or_default();
+                    let mut orch = PipelineOrchestrator::new(settings, bus);
+                    let _ = orch.run_redesign_pipeline(&target_url, &goal_prompt).await;
+                });
             }
 
             tokio::select! {

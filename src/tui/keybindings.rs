@@ -5,7 +5,46 @@ pub struct KeybindingHandler;
 
 impl KeybindingHandler {
     pub fn handle_key(state: &mut TuiState, key: KeyEvent) {
-        // Special modal: Config Editor
+        // Modal: New Run / Launch Pipeline
+        if state.active_modal == ActiveModal::NewRun {
+            match key.code {
+                KeyCode::Esc => {
+                    state.active_modal = ActiveModal::None;
+                }
+                KeyCode::Tab | KeyCode::Down => {
+                    state.run_input_focus = (state.run_input_focus + 1) % 2;
+                }
+                KeyCode::BackTab | KeyCode::Up => {
+                    state.run_input_focus = if state.run_input_focus == 0 { 1 } else { 0 };
+                }
+                KeyCode::Enter => {
+                    let url = state.run_target_url.trim().to_string();
+                    let goal = state.run_goal_prompt.trim().to_string();
+                    if !url.is_empty() {
+                        state.should_trigger_pipeline = Some((url, goal));
+                        state.active_modal = ActiveModal::None;
+                    }
+                }
+                KeyCode::Backspace => {
+                    if state.run_input_focus == 0 {
+                        state.run_target_url.pop();
+                    } else {
+                        state.run_goal_prompt.pop();
+                    }
+                }
+                KeyCode::Char(ch) => {
+                    if state.run_input_focus == 0 {
+                        state.run_target_url.push(ch);
+                    } else {
+                        state.run_goal_prompt.push(ch);
+                    }
+                }
+                _ => {}
+            }
+            return;
+        }
+
+        // Modal: Config Editor
         if state.active_modal == ActiveModal::Config {
             if state.is_editing_field {
                 match key.code {
@@ -56,7 +95,6 @@ impl KeybindingHandler {
                         state.config_status_message = None;
                     }
                     KeyCode::Char(' ') => {
-                        // Space cycles selectable options (Search Engine, Reasoning Effort, Headless)
                         state.toggle_or_cycle_selected_field();
                     }
                     KeyCode::Enter | KeyCode::Char('i') => {
@@ -99,6 +137,9 @@ impl KeybindingHandler {
             }
             (KeyModifiers::NONE, KeyCode::Char('?')) => {
                 state.active_modal = ActiveModal::Help;
+            }
+            (KeyModifiers::NONE, KeyCode::Char('r')) | (KeyModifiers::NONE, KeyCode::Char('n')) => {
+                state.active_modal = ActiveModal::NewRun;
             }
             (KeyModifiers::NONE, KeyCode::Char('c')) => {
                 state.active_modal = ActiveModal::Config;
