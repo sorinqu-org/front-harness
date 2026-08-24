@@ -4,6 +4,20 @@ FrontHarness — событийно-ориентированная CLI/TUI си�
 
 ---
 
+## Скриншоты интерфейса и результаты работы
+
+### Терминальный интерфейс (Ratatui / LazyVim Style)
+![FrontHarness TUI Interface](docs/screenshots/tui_interface.png)
+
+### Сравнение результатов редизайна (Desktop и Mobile)
+
+| Исходный сайт (Аудит) | Сгенерированный редизайн FrontHarness |
+| :---: | :---: |
+| ![Original Desktop](docs/screenshots/original_desktop.png) | ![Redesign Desktop](docs/screenshots/redesign_desktop.png) |
+| *Исходный сайт (Desktop 1920x1080)* | *Редизайн с Bento-сеткой и GSAP (Desktop 1920x1080)* |
+
+---
+
 ## Архитектура системы
 
 1. **Ядро Pi и Event Bus**: Асинхронная шина сообщений (`tokio::sync::broadcast`), полностью отделяющая логику выполнения агентов от слоя терминального рендеринга.

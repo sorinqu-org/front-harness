@@ -4,6 +4,20 @@ FrontHarness is an event-driven CLI/TUI system for automated frontend generation
 
 ---
 
+## Visual Interface & Redesign Results
+
+### Terminal User Interface (Ratatui / LazyVim Style)
+![FrontHarness TUI Interface](docs/screenshots/tui_interface.png)
+
+### Redesign Comparison (Desktop & Mobile)
+
+| Original Target Site (Audit) | FrontHarness Redesigned Site (Generated) |
+| :---: | :---: |
+| ![Original Desktop](docs/screenshots/original_desktop.png) | ![Redesign Desktop](docs/screenshots/redesign_desktop.png) |
+| *Original Desktop (1920x1080)* | *Redesigned Desktop with GSAP & Bento Layout (1920x1080)* |
+
+---
+
 ## Architecture Overview
 
 1. **Pi Core & Event Bus**: Asynchronous message bus (`tokio::sync::broadcast`) that decouples the agent execution engine from the terminal UI.
@@ -112,36 +126,6 @@ frontharness config --show
 | `m` | Open Long-Term Memory & Feedback modal |
 | `?` | Toggle Help popup |
 | `Esc` / `q` | Close active modal / Quit application |
-
----
-
-## Project Structure
-
-```
-.
-├── Cargo.toml
-├── install.sh
-├── helpers/
-│   └── playwright_crawler.py
-├── src/
-│   ├── main.rs
-│   ├── lib.rs
-│   ├── config/
-│   ├── core/
-│   ├── llm/
-│   ├── tools/
-│   ├── mcp/
-│   ├── skills/
-│   ├── agents/
-│   ├── memory/
-│   ├── tui/
-│   └── utils/
-└── tests/
-    ├── event_bus_tests.rs
-    ├── memory_tests.rs
-    ├── skills_tests.rs
-    └── tools_tests.rs
-```
 
 ---
 
