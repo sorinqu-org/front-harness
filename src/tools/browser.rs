@@ -7,6 +7,7 @@ use std::path::PathBuf;
 use tokio::process::Command;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AuditReport {
     pub target_url: String,
     pub timestamp: String,
