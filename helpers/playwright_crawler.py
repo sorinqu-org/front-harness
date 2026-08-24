@@ -2,14 +2,31 @@ import asyncio
 import json
 import os
 import sys
-from urllib.parse import urlparse
+import urllib.request
+from urllib.parse import urlparse, urljoin
 from playwright.async_api import async_playwright
 
-async def crawl(target_url: str, output_dir: str):
+async def crawl(target_input: str, output_dir: str):
     screenshots_dir = os.path.join(output_dir, "screenshots")
     assets_dir = os.path.join(output_dir, "assets")
+    images_dir = os.path.join(output_dir, "images")
     os.makedirs(screenshots_dir, exist_ok=True)
     os.makedirs(assets_dir, exist_ok=True)
+    os.makedirs(images_dir, exist_ok=True)
+
+    # 1. Resolve Local Directory or Remote URL
+    if not (target_input.startswith("http://") or target_input.startswith("https://") or target_input.startswith("file://")):
+        abs_path = os.path.abspath(target_input)
+        if os.path.isdir(abs_path):
+            index_path = os.path.join(abs_path, "index.html")
+            if os.path.exists(index_path):
+                target_url = f"file://{index_path}"
+            else:
+                target_url = f"file://{abs_path}"
+        else:
+            target_url = f"file://{abs_path}"
+    else:
+        target_url = target_input
 
     intercepted_assets = []
 
@@ -17,7 +34,7 @@ async def crawl(target_url: str, output_dir: str):
         browser = await p.chromium.launch(headless=True)
         context = await browser.new_context(
             viewport={"width": 1920, "height": 1080},
-            user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 FrontHarness/1.0"
+            user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 FrontHarness/1.0"
         )
 
         async def on_response(response):
@@ -60,7 +77,11 @@ async def crawl(target_url: str, output_dir: str):
             except Exception as e:
                 print(f"[Crawler] Navigation warning: {e}")
 
-        await page.wait_for_timeout(2000)
+        # Smooth scroll down to trigger lazy loading
+        for _ in range(8):
+            await page.mouse.wheel(0, 800)
+            await page.wait_for_timeout(300)
+        await page.wait_for_timeout(1000)
 
         # 1. Desktop Screenshot
         desktop_screenshot = os.path.join(screenshots_dir, "desktop_1920x1080.png")
@@ -69,7 +90,7 @@ async def crawl(target_url: str, output_dir: str):
 
         # 2. Mobile Screenshot
         await page.set_viewport_size({"width": 375, "height": 812})
-        await page.wait_for_timeout(1000)
+        await page.wait_for_timeout(500)
         mobile_screenshot = os.path.join(screenshots_dir, "mobile_375x812.png")
         await page.screenshot(path=mobile_screenshot, full_page=True)
         print(f"[Crawler] Captured mobile screenshot: {mobile_screenshot}")
@@ -91,10 +112,10 @@ async def crawl(target_url: str, output_dir: str):
                 if (style.fontFamily) fonts.add(style.fontFamily);
             });
 
-            document.querySelectorAll('h1, h2, h3').forEach((h) => {
+            document.querySelectorAll('h1, h2, h3, h4').forEach((h) => {
                 headings.push({
                     tag: h.tagName.toLowerCase(),
-                    text: h.innerText.trim().slice(0, 100)
+                    text: h.innerText.trim().slice(0, 150)
                 });
             });
 
@@ -102,14 +123,23 @@ async def crawl(target_url: str, output_dir: str):
                 .map(b => b.innerText.trim())
                 .filter(t => t.length > 0 && t.length < 50);
 
+            // Images extraction
+            const images = [];
+            document.querySelectorAll('img').forEach(img => {
+                if (img.src && !img.src.startsWith('data:')) {
+                    images.push({ src: img.src, alt: img.alt || '' });
+                }
+            });
+
             return {
                 title,
                 metaDescription,
-                fonts: Array.from(fonts).slice(0, 10),
-                colors: Array.from(colors).slice(0, 20),
-                headings: headings.slice(0, 15),
-                buttons: buttons.slice(0, 10),
-                bodyTextSnippet: document.body.innerText.slice(0, 2500)
+                fonts: Array.from(fonts).slice(0, 15),
+                colors: Array.from(colors).slice(0, 25),
+                headings: headings.slice(0, 25),
+                buttons: buttons.slice(0, 15),
+                images: images.slice(0, 40),
+                bodyText: document.body.innerText
             };
         }""")
 

@@ -1,3 +1,4 @@
+use crate::config::settings::Settings;
 use crate::tui::state::{ActiveModal, FocusedPane, TuiState};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
@@ -5,38 +6,79 @@ pub struct KeybindingHandler;
 
 impl KeybindingHandler {
     pub fn handle_key(state: &mut TuiState, key: KeyEvent) {
-        // Modal: New Run / Launch Pipeline
+        // Modal: Design Studio / New Run
         if state.active_modal == ActiveModal::NewRun {
             match key.code {
                 KeyCode::Esc => {
                     state.active_modal = ActiveModal::None;
                 }
-                KeyCode::Tab | KeyCode::Down => {
-                    state.run_input_focus = (state.run_input_focus + 1) % 2;
+                KeyCode::Tab => {
+                    state.run_input_focus = (state.run_input_focus + 1) % 6;
                 }
-                KeyCode::BackTab | KeyCode::Up => {
-                    state.run_input_focus = if state.run_input_focus == 0 { 1 } else { 0 };
+                KeyCode::BackTab => {
+                    if state.run_input_focus == 0 {
+                        state.run_input_focus = 5;
+                    } else {
+                        state.run_input_focus -= 1;
+                    }
+                }
+                KeyCode::Left | KeyCode::Char('h') if state.run_input_focus == 5 => {
+                    if state.run_skills_cursor == 0 {
+                        state.run_skills_cursor = state.run_skills.len().saturating_sub(1);
+                    } else {
+                        state.run_skills_cursor -= 1;
+                    }
+                }
+                KeyCode::Right | KeyCode::Char('l') if state.run_input_focus == 5 => {
+                    if !state.run_skills.is_empty() {
+                        state.run_skills_cursor = (state.run_skills_cursor + 1) % state.run_skills.len();
+                    }
+                }
+                KeyCode::Char(' ') if state.run_input_focus == 5 => {
+                    state.toggle_selected_skill();
                 }
                 KeyCode::Enter => {
-                    let url = state.run_target_url.trim().to_string();
+                    let source = state.run_target_source.trim().to_string();
                     let goal = state.run_goal_prompt.trim().to_string();
-                    if !url.is_empty() {
-                        state.should_trigger_pipeline = Some((url, goal));
+                    if !source.is_empty() {
+                        let mut settings = Settings::load().unwrap_or_default();
+                        settings.workspace_dir = std::path::PathBuf::from(&state.run_workspace_dir);
+                        settings.design.style_prompt = state.run_design_style.clone();
+                        settings.design.references = state
+                            .run_references
+                            .split(',')
+                            .map(|s| s.trim().to_string())
+                            .filter(|s| !s.is_empty())
+                            .collect();
+                        settings.design.selected_skills = state
+                            .run_skills
+                            .iter()
+                            .filter(|s| s.enabled)
+                            .map(|s| s.id.to_string())
+                            .collect();
+
+                        state.should_trigger_pipeline = Some((source, goal, settings));
                         state.active_modal = ActiveModal::None;
                     }
                 }
                 KeyCode::Backspace => {
-                    if state.run_input_focus == 0 {
-                        state.run_target_url.pop();
-                    } else {
-                        state.run_goal_prompt.pop();
+                    match state.run_input_focus {
+                        0 => { state.run_target_source.pop(); }
+                        1 => { state.run_workspace_dir.pop(); }
+                        2 => { state.run_goal_prompt.pop(); }
+                        3 => { state.run_design_style.pop(); }
+                        4 => { state.run_references.pop(); }
+                        _ => {}
                     }
                 }
                 KeyCode::Char(ch) => {
-                    if state.run_input_focus == 0 {
-                        state.run_target_url.push(ch);
-                    } else {
-                        state.run_goal_prompt.push(ch);
+                    match state.run_input_focus {
+                        0 => { state.run_target_source.push(ch); }
+                        1 => { state.run_workspace_dir.push(ch); }
+                        2 => { state.run_goal_prompt.push(ch); }
+                        3 => { state.run_design_style.push(ch); }
+                        4 => { state.run_references.push(ch); }
+                        _ => {}
                     }
                 }
                 _ => {}

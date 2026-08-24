@@ -19,6 +19,24 @@ impl CoderAgent {
         Self { agent }
     }
 
+    pub fn new_with_skills(
+        llm: Arc<LlmProvider>,
+        tools: ToolRegistry,
+        event_bus: Option<EventBus>,
+        enabled_skills: &[String],
+        design_style: &str,
+        references: &[String],
+    ) -> Self {
+        let system_prompt = SkillRegistry::build_custom_system_prompt(
+            SYSTEM_PROMPT_CODER,
+            enabled_skills,
+            design_style,
+            references,
+        );
+        let agent = BaseAgent::new("CoderAgent", &system_prompt, llm, tools, event_bus);
+        Self { agent }
+    }
+
     pub async fn generate_frontend(
         &self,
         design_spec: &str,
@@ -53,7 +71,6 @@ fn extract_code_block(text: &str, language: &str) -> Option<String> {
         }
     } else if let Some(start_pos) = text.find("```") {
         let content_start = start_pos + 3;
-        // Skip possible language identifier line
         let slice = &text[content_start..];
         let actual_start = if let Some(newline_pos) = slice.find('\n') {
             content_start + newline_pos + 1

@@ -1,5 +1,4 @@
 use crate::agents::PipelineOrchestrator;
-use crate::config::settings::Settings;
 use crate::core::event_bus::EventBus;
 use crate::tui::keybindings::KeybindingHandler;
 use crate::tui::state::{ActiveModal, TuiState};
@@ -80,12 +79,11 @@ impl TuiApp {
             }
 
             // Check if a new pipeline run was triggered from within the TUI
-            if let Some((target_url, goal_prompt)) = self.state.should_trigger_pipeline.take() {
+            if let Some((target_source, goal_prompt, settings)) = self.state.should_trigger_pipeline.take() {
                 let bus = self.event_bus.clone();
                 tokio::spawn(async move {
-                    let settings = Settings::load().unwrap_or_default();
                     let mut orch = PipelineOrchestrator::new(settings, bus);
-                    let _ = orch.run_redesign_pipeline(&target_url, &goal_prompt).await;
+                    let _ = orch.run_redesign_pipeline(&target_source, &goal_prompt).await;
                 });
             }
 

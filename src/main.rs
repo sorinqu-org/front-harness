@@ -17,6 +17,10 @@ struct Cli {
     #[arg(long, global = true)]
     headless: bool,
 
+    /// Custom workspace output directory
+    #[arg(long, global = true)]
+    workspace_dir: Option<PathBuf>,
+
     /// Log file path
     #[arg(long, global = true)]
     log_file: Option<PathBuf>,
@@ -24,21 +28,45 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Perform deep redesign & audit of a target website
+    /// Perform deep redesign & audit of a target website or local folder
     Audit {
         /// Target website URL to audit and redesign
         #[arg(short, long)]
-        url: String,
+        url: Option<String>,
 
-        /// Business objective and design goal for redesign
+        /// Path to a local site folder (contains index.html / assets)
+        #[arg(long)]
+        local_dir: Option<PathBuf>,
+
+        /// Business objective and design requirements
         #[arg(short, long, default_value = "Elevate aesthetics and readability, implement smooth modern animations and interactive components, preserving structure while optimizing conversion.")]
         goal: String,
+
+        /// Explicit design style directives (palette, typography, layout)
+        #[arg(long)]
+        style: Option<String>,
+
+        /// Comma-separated inspiration links or local image reference paths
+        #[arg(long)]
+        references: Option<String>,
+
+        /// Comma-separated list of mandatory skills (e.g. hallmark,taste,stop_slop,motion,icons)
+        #[arg(long)]
+        skills: Option<String>,
     },
     /// Generate a brand new web application from scratch
     Greenfield {
         /// Project specification and brief
         #[arg(short, long)]
         goal: String,
+
+        /// Explicit design style directives
+        #[arg(long)]
+        style: Option<String>,
+
+        /// References and inspiration URLs or file paths
+        #[arg(long)]
+        references: Option<String>,
     },
     /// Discover available models from the configured LLM endpoint
     Models,
@@ -53,12 +81,15 @@ enum Commands {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
-    let settings = Settings::load()?;
+    let mut settings = Settings::load()?;
+
+    if let Some(ws) = cli.workspace_dir {
+        settings.workspace_dir = ws;
+    }
 
     let log_path = cli.log_file.unwrap_or_else(|| {
         settings
             .workspace_dir
-            .join("workspace")
             .join("frontharness.log")
     });
     let _ = init_logger(Some(&log_path));
@@ -66,30 +97,58 @@ async fn main() -> anyhow::Result<()> {
     let event_bus = EventBus::default();
 
     match cli.command {
-        Some(Commands::Audit { url, goal }) => {
-            println!("[FrontHarness] Starting redesign audit for {}", url);
-            let mut orchestrator = PipelineOrchestrator::new(settings.clone(), event_bus.clone());
+        Some(Commands::Audit { url, local_dir, goal, style, references, skills }) => {
+            let target_source = if let Some(u) = url {
+                u
+            } else if let Some(ld) = local_dir {
+                ld.to_string_lossy().to_string()
+            } else {
+                "https://as-chelyabinsk.ru/".to_string()
+            };
+
+            if let Some(st) = style {
+                settings.design.style_prompt = st;
+            }
+            if let Some(refs) = references {
+                settings.design.references = refs.split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect();
+            }
+            if let Some(sk) = skills {
+                settings.design.selected_skills = sk.split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect();
+            }
+
+            println!("[FrontHarness] Starting redesign audit for: {}", target_source);
+            println!("[FrontHarness] Design style: {}", settings.design.style_prompt);
+            println!("[FrontHarness] Active skills: {:?}", settings.design.selected_skills);
+            println!("[FrontHarness] Output workspace: {:?}", settings.workspace_dir);
 
             if cli.headless {
                 println!("[FrontHarness] Running in headless mode...");
-                let output = orchestrator.run_redesign_pipeline(&url, &goal).await?;
+                let mut orchestrator = PipelineOrchestrator::new(settings, event_bus);
+                let output = orchestrator.run_redesign_pipeline(&target_source, &goal).await?;
                 println!("[FrontHarness] Success! Generated frontend saved to: {:?}", output);
             } else {
-                let target_url = url.clone();
+                let target = target_source.clone();
                 let target_goal = goal.clone();
                 let orchestrator_bus = event_bus.clone();
                 let orch_settings = settings.clone();
 
                 tokio::spawn(async move {
                     let mut orch = PipelineOrchestrator::new(orch_settings, orchestrator_bus);
-                    let _ = orch.run_redesign_pipeline(&target_url, &target_goal).await;
+                    let _ = orch.run_redesign_pipeline(&target, &target_goal).await;
                 });
 
                 let mut app = TuiApp::new(&settings.llm.model, &settings.llm.reasoning_effort, event_bus);
                 app.run().await?;
             }
         }
-        Some(Commands::Greenfield { goal }) => {
+        Some(Commands::Greenfield { goal, style, references }) => {
+            if let Some(st) = style {
+                settings.design.style_prompt = st;
+            }
+            if let Some(refs) = references {
+                settings.design.references = refs.split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect();
+            }
+
             println!("[FrontHarness] Starting greenfield generation for: {}", goal);
             let mut orchestrator = PipelineOrchestrator::new(settings.clone(), event_bus.clone());
             let output = orchestrator.run_redesign_pipeline("https://example.com", &goal).await?;

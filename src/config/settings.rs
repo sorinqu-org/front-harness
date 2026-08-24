@@ -64,12 +64,51 @@ impl Default for BrowserConfig {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DesignDirectives {
+    pub style_prompt: String,
+    pub references: Vec<String>,
+    pub selected_skills: Vec<String>,
+}
+
+impl Default for DesignDirectives {
+    fn default() -> Self {
+        Self {
+            style_prompt: "Modern Dark Industrial: Dark Slate (#09090b), Electric Amber (#f59e0b) accent, Space Grotesk headings, Inter body, GSAP ScrollTrigger, Lucide vector icons".to_string(),
+            references: Vec::new(),
+            selected_skills: vec![
+                "hallmark".into(),
+                "taste".into(),
+                "stop_slop".into(),
+                "motion".into(),
+                "icons".into(),
+                "modern_web".into(),
+            ],
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Settings {
     pub llm: LlmConfig,
     pub search: SearchConfig,
     pub browser: BrowserConfig,
+    pub design: DesignDirectives,
     pub workspace_dir: PathBuf,
+    pub local_site_dir: Option<PathBuf>,
+}
+
+impl Default for Settings {
+    fn default() -> Self {
+        Self {
+            llm: LlmConfig::default(),
+            search: SearchConfig::default(),
+            browser: BrowserConfig::default(),
+            design: DesignDirectives::default(),
+            workspace_dir: PathBuf::from("workspace"),
+            local_site_dir: None,
+        }
+    }
 }
 
 impl Settings {
@@ -77,7 +116,9 @@ impl Settings {
         let _ = dotenvy::dotenv();
 
         let mut settings = Self::default();
-        settings.workspace_dir = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+        if let Ok(current) = std::env::current_dir() {
+            settings.workspace_dir = current.join("workspace");
+        }
 
         if let Ok(val) = std::env::var("LLM_BASE_URL") {
             settings.llm.base_url = val;
@@ -106,6 +147,16 @@ impl Settings {
         }
         if let Ok(val) = std::env::var("BROWSER_HEADLESS") {
             settings.browser.headless = val.to_lowercase() == "true" || val == "1";
+        }
+
+        if let Ok(val) = std::env::var("WORKSPACE_DIR") {
+            settings.workspace_dir = PathBuf::from(val);
+        }
+        if let Ok(val) = std::env::var("LOCAL_SITE_DIR") {
+            settings.local_site_dir = Some(PathBuf::from(val));
+        }
+        if let Ok(val) = std::env::var("DESIGN_STYLE") {
+            settings.design.style_prompt = val;
         }
 
         if let Some(config_path) = Self::global_config_path() {
@@ -148,6 +199,12 @@ impl Settings {
             }
             if let Some(key) = search.get("tavily_api_key").and_then(|v| v.as_str()) {
                 self.search.tavily_api_key = Some(key.to_string());
+            }
+        }
+
+        if let Some(design) = yaml_val.get("design") {
+            if let Some(style) = design.get("style_prompt").and_then(|v| v.as_str()) {
+                self.design.style_prompt = style.to_string();
             }
         }
 

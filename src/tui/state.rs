@@ -1,6 +1,7 @@
 use crate::config::settings::Settings;
 use crate::core::events::Event;
 use crate::llm::reasoning::{cycle_next_effort, get_available_efforts_for_model};
+use crate::skills::registry::{SkillItem, SkillRegistry};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FocusedPane {
@@ -58,11 +59,16 @@ pub struct TuiState {
     pub config_edit_buffer: String,
     pub config_status_message: Option<String>,
 
-    // New Run / Prompt modal state
-    pub run_target_url: String,
+    // New Run / Design Studio modal state
+    pub run_target_source: String,
+    pub run_workspace_dir: String,
     pub run_goal_prompt: String,
-    pub run_input_focus: usize, // 0 = URL, 1 = Prompt
-    pub should_trigger_pipeline: Option<(String, String)>,
+    pub run_design_style: String,
+    pub run_references: String,
+    pub run_skills: Vec<SkillItem>,
+    pub run_skills_cursor: usize,
+    pub run_input_focus: usize, // 0: Source, 1: Workspace, 2: Goal, 3: Style, 4: References, 5: Skills, 6: Launch
+    pub should_trigger_pipeline: Option<(String, String, Settings)>,
 }
 
 impl TuiState {
@@ -113,6 +119,13 @@ impl TuiState {
                 description: "Tavily Search API key (optional if using DuckDuckGo)".into(),
             },
             ConfigField {
+                key: "WORKSPACE_DIR".into(),
+                label: "Workspace Directory".into(),
+                value: settings.workspace_dir.to_string_lossy().to_string(),
+                is_secret: false,
+                description: "Default output directory for generated sites and artifacts".into(),
+            },
+            ConfigField {
                 key: "DEV_SERVER_PORT".into(),
                 label: "Dev Server Port".into(),
                 value: settings.browser.dev_server_port.to_string(),
@@ -134,7 +147,7 @@ impl TuiState {
             stream_buffer: String::new(),
             logs: Vec::new(),
             dag_steps: vec![
-                DagStep { id: "1".into(), name: "1. Audit (Playwright)".into(), status: "PENDING".into(), detail: "Inspect DOM & capture screenshots".into() },
+                DagStep { id: "1".into(), name: "1. Audit (Playwright)".into(), status: "PENDING".into(), detail: "Inspect DOM, CSS & assets".into() },
                 DagStep { id: "2".into(), name: "2. Research (Web)".into(), status: "PENDING".into(), detail: "Discover industry patterns".into() },
                 DagStep { id: "3".into(), name: "3. Art Direction".into(), status: "PENDING".into(), detail: "Build tokens & macrostructure".into() },
                 DagStep { id: "4".into(), name: "4. Implementation".into(), status: "PENDING".into(), detail: "Write modern HTML/Tailwind/GSAP".into() },
@@ -151,10 +164,24 @@ impl TuiState {
             is_editing_field: false,
             config_edit_buffer: String::new(),
             config_status_message: None,
-            run_target_url: "https://as-chelyabinsk.ru/".into(),
-            run_goal_prompt: "Повысить читаемость и конверсию, внедрить современные анимации GSAP и адаптивные Bento-секции".into(),
+
+            // New Run State
+            run_target_source: "https://as-chelyabinsk.ru/".into(),
+            run_workspace_dir: "workspace".into(),
+            run_goal_prompt: "Повысить конверсию, сделать современный сайт с Bento-сеткой и плавными анимациями".into(),
+            run_design_style: "Modern Dark Industrial: Dark Slate (#09090b), Electric Amber (#f59e0b) accent, Space Grotesk headings, Inter body, GSAP ScrollTrigger, Lucide vector icons".into(),
+            run_references: "https://linear.app, https://audi.com".into(),
+            run_skills: SkillRegistry::default_skills(),
+            run_skills_cursor: 0,
             run_input_focus: 0,
             should_trigger_pipeline: None,
+        }
+    }
+
+    pub fn toggle_selected_skill(&mut self) {
+        let idx = self.run_skills_cursor;
+        if idx < self.run_skills.len() {
+            self.run_skills[idx].enabled = !self.run_skills[idx].enabled;
         }
     }
 
@@ -227,6 +254,9 @@ impl TuiState {
                 }
                 "TAVILY_API_KEY" => {
                     settings.search.tavily_api_key = if f.value.is_empty() { None } else { Some(f.value.clone()) };
+                }
+                "WORKSPACE_DIR" => {
+                    settings.workspace_dir = std::path::PathBuf::from(&f.value);
                 }
                 "DEV_SERVER_PORT" => {
                     if let Ok(p) = f.value.parse::<u16>() {
