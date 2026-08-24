@@ -9,13 +9,13 @@ use ratatui::{
 };
 
 pub fn render_config_modal(f: &mut Frame, state: &TuiState) {
-    let area = centered_rect(80, 75, f.area());
+    let area = centered_rect(82, 80, f.area());
     f.render_widget(Clear, area);
 
     let title = if state.is_editing_field {
         " FrontHarness Config Editor [EDIT MODE: Type new value & press Enter] "
     } else {
-        " FrontHarness Config Editor [j/k: Navigate | Enter/i: Edit | s: Save | Esc: Exit] "
+        " FrontHarness Config Editor [Space: Toggle/Cycle | Enter: Edit | s: Save | Esc: Exit] "
     };
 
     let border_color = if state.is_editing_field {
@@ -88,7 +88,7 @@ pub fn render_config_modal(f: &mut Frame, state: &TuiState) {
 
         lines.push(Line::from(vec![
             Span::raw("    "),
-            Span::styled(&field.description, Style::default().fg(Color::Rgb(100, 100, 110))),
+            Span::styled(&field.description, Style::default().fg(Color::Rgb(120, 120, 135))),
         ]));
 
         lines.push(Line::from(Span::raw("")));
@@ -101,18 +101,19 @@ pub fn render_config_modal(f: &mut Frame, state: &TuiState) {
     // Bottom Help & Status Bar
     let status_text = if let Some(ref msg) = state.config_status_message {
         Line::from(vec![
-            Span::styled(" SUCCESS: ", Style::default().bg(Color::Green).fg(Color::Black).add_modifier(Modifier::BOLD)),
+            Span::styled(" STATUS: ", Style::default().bg(Color::Green).fg(Color::Black).add_modifier(Modifier::BOLD)),
             Span::styled(format!(" {} ", msg), Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)),
         ])
     } else if state.is_editing_field {
         Line::from(vec![
             Span::styled(" EDITING ", Style::default().bg(Color::Yellow).fg(Color::Black).add_modifier(Modifier::BOLD)),
-            Span::styled(" Type to change value. Press Enter to confirm, Esc to discard.", Style::default().fg(Color::Yellow)),
+            Span::styled(" Type to modify value. Press Enter to confirm, Esc to discard.", Style::default().fg(Color::Yellow)),
         ])
     } else {
         Line::from(vec![
             Span::styled(" [j/k] Navigate ", Style::default().fg(Color::Cyan)),
-            Span::styled(" [Enter/i] Edit ", Style::default().fg(Color::Yellow)),
+            Span::styled(" [Space] Toggle/Cycle Options ", Style::default().fg(Color::Yellow)),
+            Span::styled(" [Enter/i] Edit ", Style::default().fg(Color::White)),
             Span::styled(" [s] Save to Disk ", Style::default().fg(Color::Green)),
             Span::styled(" [Esc/q] Close ", Style::default().fg(Color::DarkGray)),
         ])

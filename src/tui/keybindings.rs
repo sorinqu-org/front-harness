@@ -13,6 +13,9 @@ impl KeybindingHandler {
                         let idx = state.config_selected_index;
                         if idx < state.config_fields.len() {
                             state.config_fields[idx].value = state.config_edit_buffer.clone();
+                            if state.config_fields[idx].key == "LLM_MODEL" {
+                                state.refresh_model_efforts();
+                            }
                         }
                         state.is_editing_field = false;
                         state.config_status_message = Some("Value updated in memory. Press 's' to save to disk.".into());
@@ -36,13 +39,13 @@ impl KeybindingHandler {
                         state.active_modal = ActiveModal::None;
                         state.config_status_message = None;
                     }
-                    KeyCode::Char('j') | KeyCode::Down | KeyCode::Tab => {
+                    KeyCode::Char('j') | KeyCode::Down => {
                         if !state.config_fields.is_empty() {
                             state.config_selected_index = (state.config_selected_index + 1) % state.config_fields.len();
                         }
                         state.config_status_message = None;
                     }
-                    KeyCode::Char('k') | KeyCode::Up | KeyCode::BackTab => {
+                    KeyCode::Char('k') | KeyCode::Up => {
                         if !state.config_fields.is_empty() {
                             if state.config_selected_index == 0 {
                                 state.config_selected_index = state.config_fields.len() - 1;
@@ -52,12 +55,21 @@ impl KeybindingHandler {
                         }
                         state.config_status_message = None;
                     }
+                    KeyCode::Char(' ') => {
+                        // Space cycles selectable options (Search Engine, Reasoning Effort, Headless)
+                        state.toggle_or_cycle_selected_field();
+                    }
                     KeyCode::Enter | KeyCode::Char('i') => {
                         let idx = state.config_selected_index;
                         if idx < state.config_fields.len() {
-                            state.config_edit_buffer = state.config_fields[idx].value.clone();
-                            state.is_editing_field = true;
-                            state.config_status_message = None;
+                            let key = state.config_fields[idx].key.as_str();
+                            if key == "SEARCH_PROVIDER" || key == "BROWSER_HEADLESS" || key == "LLM_REASONING_EFFORT" {
+                                state.toggle_or_cycle_selected_field();
+                            } else {
+                                state.config_edit_buffer = state.config_fields[idx].value.clone();
+                                state.is_editing_field = true;
+                                state.config_status_message = None;
+                            }
                         }
                     }
                     KeyCode::Char('s') => {

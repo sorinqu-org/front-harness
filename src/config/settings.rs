@@ -28,12 +28,14 @@ impl Default for LlmConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SearchConfig {
+    pub provider: String, // "tavily" or "duckduckgo"
     pub tavily_api_key: Option<String>,
 }
 
 impl Default for SearchConfig {
     fn default() -> Self {
         Self {
+            provider: "duckduckgo".to_string(),
             tavily_api_key: None,
         }
     }
@@ -90,6 +92,9 @@ impl Settings {
             settings.llm.reasoning_effort = val;
         }
 
+        if let Ok(val) = std::env::var("SEARCH_PROVIDER").or_else(|_| std::env::var("SEARCH_ENGINE")) {
+            settings.search.provider = val.to_lowercase();
+        }
         if let Ok(val) = std::env::var("TAVILY_API_KEY") {
             settings.search.tavily_api_key = Some(val);
         }
@@ -134,6 +139,15 @@ impl Settings {
             }
             if let Some(reasoning) = llm.get("reasoning_effort").and_then(|v| v.as_str()) {
                 self.llm.reasoning_effort = reasoning.to_string();
+            }
+        }
+
+        if let Some(search) = yaml_val.get("search") {
+            if let Some(provider) = search.get("provider").and_then(|v| v.as_str()) {
+                self.search.provider = provider.to_string();
+            }
+            if let Some(key) = search.get("tavily_api_key").and_then(|v| v.as_str()) {
+                self.search.tavily_api_key = Some(key.to_string());
             }
         }
 

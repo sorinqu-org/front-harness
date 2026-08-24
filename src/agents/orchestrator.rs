@@ -35,7 +35,7 @@ impl PipelineOrchestrator {
         let ws = settings.workspace_dir.clone();
         tools.register(Arc::new(FileSystemTool::new(ws.clone())));
         tools.register(Arc::new(BashRunnerTool::new(ws.clone())));
-        tools.register(Arc::new(WebSearchTool::new(settings.search.tavily_api_key.clone())));
+        tools.register(Arc::new(WebSearchTool::new(&settings.search.provider, settings.search.tavily_api_key.clone())));
 
         let crawler_script = ws.join("helpers").join("playwright_crawler.py");
         let audit_dir = ws.join("workspace").join("audit");
