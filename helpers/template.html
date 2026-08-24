@@ -3,109 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>__TITLE__ | Профессиональный автосервис в Челябинске</title>
+    <title>Audi Service Челябинск | Официальное сервисное обслуживание Audi и VAG</title>
+    <meta name="description" content="Официальный сервис Audi и автомобилей группы VAG в Челябинске с 2003 года. 10 постов, скидка 20% на работы и з/ч, 3D сход-развал, кузовной цех.">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            900: '#78350f',
+                            accent: '#e11d48'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { background-color: #09090b; color: #fafafa; font-family: 'Inter', sans-serif; }
-        h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; }
+        body { background-color: #09090b; color: #f4f4f5; font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4, .font-display { font-family: 'Space Grotesk', sans-serif; }
+        .glass-panel { background: rgba(24, 24, 27, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(63, 63, 70, 0.4); }
     </style>
 </head>
 <body class="bg-zinc-950 text-zinc-100 antialiased selection:bg-amber-500 selection:text-black">
-    <!-- Header / Navigation -->
-    <header class="fixed top-0 inset-x-0 z-50 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800/80">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+
+    <!-- Top Announcement Bar -->
+    <div class="bg-zinc-900 border-b border-zinc-800 text-xs text-zinc-400 py-2 px-4">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-black font-bold text-xl font-mono">
-                    AS
-                </div>
-                <div>
-                    <div class="font-bold text-lg tracking-tight text-white">__TITLE__</div>
-                    <div class="text-xs text-zinc-400">Челябинск, ул. Производственная</div>
-                </div>
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    Спецпредложение
+                </span>
+                <span>Владельцам Audi и VAG: скидка 20% на работы и з/ч при первом визите</span>
+            </div>
+            <div class="flex items-center space-x-6">
+                <span>Челябинск, ул. Чичерина, 52</span>
+                <span class="text-zinc-500">|</span>
+                <span>Пн-Вс: 09:00 — 20:00</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header / Sticky Nav -->
+    <header class="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800/80 transition-all">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <!-- Audi Rings Vector Mark -->
+                <a href="#" class="flex items-center space-x-3">
+                    <svg class="h-8 w-auto text-white" viewBox="0 0 100 35" fill="none" stroke="currentColor" stroke-width="3">
+                        <circle cx="16" cy="17.5" r="14"/>
+                        <circle cx="38" cy="17.5" r="14"/>
+                        <circle cx="60" cy="17.5" r="14"/>
+                        <circle cx="82" cy="17.5" r="14"/>
+                    </svg>
+                    <div class="border-l border-zinc-700 pl-3">
+                        <div class="font-display font-bold text-lg tracking-tight text-white leading-tight">Audi Service</div>
+                        <div class="text-[11px] text-zinc-400 tracking-wider uppercase font-medium">Официальный сервис в Челябинске</div>
+                    </div>
+                </a>
             </div>
             
-            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-zinc-300">
+            <nav class="hidden lg:flex items-center space-x-8 text-sm font-medium text-zinc-300">
+                <a href="#about" class="hover:text-amber-400 transition-colors">О центре</a>
+                <a href="#brands" class="hover:text-amber-400 transition-colors">Марки VAG</a>
                 <a href="#services" class="hover:text-amber-400 transition-colors">Услуги</a>
-                <a href="#advantages" class="hover:text-amber-400 transition-colors">Преимущества</a>
-                <a href="#workflow" class="hover:text-amber-400 transition-colors">Процесс</a>
+                <a href="#advantages" class="hover:text-amber-400 transition-colors">Инфраструктура</a>
+                <a href="#promotions" class="hover:text-amber-400 transition-colors">Акции</a>
+                <a href="#team" class="hover:text-amber-400 transition-colors">Команда</a>
                 <a href="#contacts" class="hover:text-amber-400 transition-colors">Контакты</a>
             </nav>
 
             <div class="flex items-center space-x-4">
-                <a href="tel:+73512000000" class="hidden sm:flex items-center space-x-2 text-sm font-medium text-zinc-200 hover:text-white">
-                    <svg class="w-4 h-4 text-amber-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                    <span>+7 (351) 200-00-00</span>
+                <a href="tel:+73512470000" class="hidden sm:flex flex-col text-right">
+                    <span class="text-xs text-zinc-400">Прямой номер мастера</span>
+                    <span class="font-display font-bold text-white text-base hover:text-amber-400 transition-colors">+7 (351) 247-00-00</span>
                 </a>
-                <button onclick="document.getElementById('order-modal').classList.remove('hidden')" class="px-5 py-2.5 rounded-lg bg-amber-500 text-zinc-950 font-medium text-sm hover:bg-amber-400 transition-all active:scale-[0.98]">
+                <button onclick="openBookingModal('Общая запись')" class="px-5 py-2.5 rounded-lg bg-amber-500 text-zinc-950 font-semibold text-sm hover:bg-amber-400 transition-all shadow-md shadow-amber-500/10 active:scale-[0.98]">
                     Записаться онлайн
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Hero Section -->
-    <section class="relative min-h-[90vh] flex items-center pt-28 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center w-full">
+    <!-- Hero Section with Real Original Banner Background -->
+    <section class="relative min-h-[92vh] flex items-center pt-12 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
+        <!-- Background Image with Dark Vignette -->
+        <div class="absolute inset-0 z-0 opacity-25">
+            <img src="images/hero_audi_banner.png" alt="Audi Service Banner" class="w-full h-full object-cover object-center">
+            <div class="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/80 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-zinc-950/70"></div>
+        </div>
+
+        <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center w-full">
             <div class="lg:col-span-7 space-y-8">
-                <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-xs text-amber-400 font-mono tracking-wide">
+                <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-zinc-900/90 border border-zinc-700 text-xs text-amber-400 font-mono tracking-wide">
                     <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                    <span>Сертифицированный автотехцентр в Челябинске</span>
+                    <span>Авто Центр Челябинск — премиальный сервис с 2003 года</span>
                 </div>
-                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight">
-                    Качественный ремонт и диагностика автомобилей
+
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.1]">
+                    Профессиональный ремонт и обслуживание <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-200">Audi & VAG Group</span>
                 </h1>
-                <p class="text-lg text-zinc-400 max-w-2xl leading-relaxed">
-                    Честные фиксированные цены без навязанных услуг. Официальная гарантия на все выполненные работы и запчасти.
-                </p>
+
+                <div class="p-6 rounded-2xl bg-zinc-900/80 border border-amber-500/30 backdrop-blur-md space-y-3">
+                    <div class="text-sm font-semibold uppercase tracking-wider text-amber-400 flex items-center space-x-2">
+                        <svg class="w-4 h-4 text-amber-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <span>Специальное предложение для владельцев VAG</span>
+                    </div>
+                    <p class="text-base sm:text-lg text-zinc-200 font-medium">
+                        Скидка 20% на работы и запчасти, а также фиксированная цена нормо-часа вне зависимости от года производства вашего авто!
+                    </p>
+                </div>
+
                 <div class="flex flex-wrap gap-4 pt-2">
-                    <button onclick="document.getElementById('order-modal').classList.remove('hidden')" class="px-8 py-4 rounded-xl bg-amber-500 text-zinc-950 font-semibold text-base hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20 active:scale-[0.98]">
-                        Рассчитать стоимость ремонта
+                    <button onclick="openBookingModal('Заявка на 20% скидку VAG')" class="px-8 py-4 rounded-xl bg-amber-500 text-zinc-950 font-bold text-base hover:bg-amber-400 transition-all shadow-xl shadow-amber-500/20 active:scale-[0.98]">
+                        Получить скидку 20% на ТО
                     </button>
-                    <a href="#services" class="px-8 py-4 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-200 font-medium text-base hover:bg-zinc-800 transition-all">
-                        Каталог услуг
+                    <a href="#services" class="px-8 py-4 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-200 font-semibold text-base hover:bg-zinc-800 transition-all">
+                        Каталог всех услуг
                     </a>
                 </div>
                 
-                <div class="grid grid-cols-3 gap-6 pt-6 border-t border-zinc-800/80">
+                <!-- Key Trust Metrics -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-6 border-t border-zinc-800/80">
                     <div>
-                        <div class="text-2xl sm:text-3xl font-bold text-white">15+</div>
-                        <div class="text-xs sm:text-sm text-zinc-400 mt-1">лет опыта работы</div>
+                        <div class="text-3xl font-bold font-display text-white">20+ лет</div>
+                        <div class="text-xs text-zinc-400 mt-1">Опыта работы (с 2003 г.)</div>
                     </div>
                     <div>
-                        <div class="text-2xl sm:text-3xl font-bold text-white">100%</div>
-                        <div class="text-xs sm:text-sm text-zinc-400 mt-1">гарантия на работы</div>
+                        <div class="text-3xl font-bold font-display text-white">10 постов</div>
+                        <div class="text-xs text-zinc-400 mt-1">Технического ремонта</div>
                     </div>
                     <div>
-                        <div class="text-2xl sm:text-3xl font-bold text-white">30 мин</div>
-                        <div class="text-xs sm:text-sm text-zinc-400 mt-1">экспресс-диагностика</div>
+                        <div class="text-3xl font-bold font-display text-white">100%</div>
+                        <div class="text-xs text-zinc-400 mt-1">Гарантия на работы и з/ч</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-bold font-display text-white">3D ODIS</div>
+                        <div class="text-xs text-zinc-400 mt-1">Дилерские стенды VAG</div>
                     </div>
                 </div>
             </div>
 
+            <!-- Fast Interactive Booking Card -->
             <div class="lg:col-span-5">
-                <div class="relative rounded-2xl bg-zinc-900/90 border border-zinc-800 p-8 shadow-2xl space-y-6">
-                    <h3 class="text-xl font-bold text-white">Быстрая запись на сервис</h3>
-                    <p class="text-sm text-zinc-400">Оставьте заявку и мастер перезвонит в течение 5 минут для консультации.</p>
-                    <form onsubmit="event.preventDefault(); alert('Заявка отправлена!');" class="space-y-4">
+                <div class="glass-panel rounded-3xl p-8 shadow-2xl space-y-6">
+                    <div>
+                        <span class="text-xs font-mono uppercase tracking-wider text-amber-500">Прямая связь с мастером</span>
+                        <h3 class="text-2xl font-bold text-white mt-1">Экспресс-запись на сервис</h3>
+                        <p class="text-xs text-zinc-400 mt-1">Мастер-консультант перезвонит в течение 5 минут для уточнения задачи.</p>
+                    </div>
+
+                    <form onsubmit="handleFormSubmit(event)" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-medium text-zinc-300 mb-1.5">Ваше имя</label>
-                            <input type="text" required placeholder="Иван" class="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 text-sm">
+                            <label class="block text-xs font-medium text-zinc-300 mb-1">Марка и модель автомобиля</label>
+                            <select id="hero-car-model" class="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none focus:border-amber-500">
+                                <option value="Audi A3/A4/A6/A8">Audi (A3, A4, A6, A8, Q3, Q5, Q7, Q8, e-tron)</option>
+                                <option value="Volkswagen">Volkswagen (Tiguan, Touareg, Passat, Golf, Polo)</option>
+                                <option value="Porsche">Porsche (Cayenne, Macan, Panamera, 911)</option>
+                                <option value="Skoda">Skoda (Octavia, Kodiaq, Superb, Karoq)</option>
+                                <option value="Bentley / Lamborghini">Bentley / Lamborghini</option>
+                                <option value="Другая марка">Другой автомобиль</option>
+                            </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-zinc-300 mb-1.5">Номер телефона</label>
-                            <input type="tel" required placeholder="+7 (___) ___-__-__" class="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 text-sm">
+                            <label class="block text-xs font-medium text-zinc-300 mb-1">Требуемая услуга или симптом</label>
+                            <input type="text" id="hero-service-type" required placeholder="Например: замена масла, стук в подвеске, ТО-2" class="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-amber-500">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-zinc-300 mb-1.5">Марка авто и проблема</label>
-                            <input type="text" placeholder="Например: Toyota Camry, замена масла" class="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 text-sm">
+                            <label class="block text-xs font-medium text-zinc-300 mb-1">Ваш номер телефона</label>
+                            <input type="tel" id="hero-phone" required placeholder="+7 (___) ___-__-__" class="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-amber-500 font-mono">
                         </div>
-                        <button type="submit" class="w-full py-3.5 rounded-lg bg-amber-500 text-zinc-950 font-semibold text-sm hover:bg-amber-400 transition-all shadow-md active:scale-[0.98]">
-                            Отправить заявку
+                        <div class="flex items-start space-x-2 pt-1">
+                            <input type="checkbox" id="hero-consent" required checked class="mt-1 rounded bg-zinc-900 border-zinc-700 text-amber-500 focus:ring-0">
+                            <label for="hero-consent" class="text-[11px] text-zinc-400 leading-tight">
+                                Я даю согласие на обработку персональных данных в соответствии с политикой конфиденциальности.
+                            </label>
+                        </div>
+                        <button type="submit" class="w-full py-4 rounded-xl bg-amber-500 text-zinc-950 font-bold text-sm hover:bg-amber-400 transition-all shadow-lg active:scale-[0.98]">
+                            Записаться со скидкой 20%
                         </button>
                     </form>
                 </div>
@@ -113,70 +204,613 @@
         </div>
     </section>
 
-    <!-- Services Bento Grid -->
-    <section id="services" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">Комплексные услуги автосервиса</h2>
-            <p class="text-zinc-400 text-base">Современное диагностическое оборудование и квалифицированные специалисты для любых задач.</p>
+    <!-- Brands Supported Section -->
+    <section id="brands" class="py-12 border-y border-zinc-800 bg-zinc-900/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-8">
+                <span class="text-xs uppercase font-mono tracking-widest text-zinc-400">Специализация на автомобилях концерна VAG Group</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 items-center justify-items-center">
+                <div class="text-center font-display font-bold text-xl text-zinc-300 hover:text-white transition-colors">AUDI</div>
+                <div class="text-center font-display font-bold text-xl text-zinc-300 hover:text-white transition-colors">PORSCHE</div>
+                <div class="text-center font-display font-bold text-xl text-zinc-300 hover:text-white transition-colors">VOLKSWAGEN</div>
+                <div class="text-center font-display font-bold text-xl text-zinc-300 hover:text-white transition-colors">SKODA</div>
+                <div class="text-center font-display font-bold text-xl text-zinc-300 hover:text-white transition-colors">BENTLEY</div>
+                <div class="text-center font-display font-bold text-xl text-zinc-300 hover:text-white transition-colors">LAMBORGHINI</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section with Real Workshop Photos (4 Photos Collage) -->
+    <section id="about" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div class="lg:col-span-6 space-y-6">
+                <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs text-amber-400 font-mono">
+                    <span>О дилерском центре</span>
+                </div>
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white">
+                    20 лет заботы о премиальных автомобилях
+                </h2>
+                <div class="space-y-4 text-zinc-300 text-base leading-relaxed">
+                    <p>
+                        Авто Центр Челябинск обслуживает премиальные марки с <strong>2003 года</strong>. Двадцать лет опыта работы в сфере премиальных автомобилей научили нас выполнять свою работу качественно, в срок и с максимально высоким уровнем удовлетворенности наших клиентов.
+                    </p>
+                    <p>
+                        Наш техцентр укомплектован дилерским диагностическим оборудованием, специнструментом VAG и квалифицированным персоналом, прошедшим профильную сертификацию.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
+                    <div class="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
+                        <div class="text-amber-400 font-bold text-lg font-display">Гарантия</div>
+                        <div class="text-xs text-zinc-400 mt-1">Официальная гарантия до 12 месяцев на все работы</div>
+                    </div>
+                    <div class="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
+                        <div class="text-amber-400 font-bold text-lg font-display">Склад з/ч</div>
+                        <div class="text-xs text-zinc-400 mt-1">Оригинальные детали и проверенные дубликаты в наличии</div>
+                    </div>
+                    <div class="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
+                        <div class="text-amber-400 font-bold text-lg font-display">Прозрачность</div>
+                        <div class="text-xs text-zinc-400 mt-1">Видеофиксация и согласование каждого этапа</div>
+                    </div>
+                </div>
+
+                <div class="pt-4">
+                    <button onclick="openBookingModal('Консультация с мастером')" class="px-6 py-3.5 rounded-xl bg-zinc-900 border border-zinc-700 hover:border-amber-500 text-white font-medium text-sm transition-all flex items-center space-x-2">
+                        <span>Задать вопрос руководителю сервиса</span>
+                        <svg class="w-4 h-4 text-amber-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Real Photos 4-Grid from Original Site -->
+            <div class="lg:col-span-6 grid grid-cols-2 gap-4">
+                <div class="space-y-4">
+                    <div class="rounded-2xl overflow-hidden border border-zinc-800 shadow-xl group">
+                        <img src="images/mechanic_oil_check.webp" alt="Мастер Audi Service проверяет уровень масла" class="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="p-3 bg-zinc-900/90 text-xs text-zinc-300 font-medium">Контроль технических жидкостей</div>
+                    </div>
+                    <div class="rounded-2xl overflow-hidden border border-zinc-800 shadow-xl group">
+                        <img src="images/engine_bay_inspection.webp" alt="Диагностика моторного отсека VAG" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="p-3 bg-zinc-900/90 text-xs text-zinc-300 font-medium">Комплексный осмотр ДВС</div>
+                    </div>
+                </div>
+                <div class="space-y-4 pt-6">
+                    <div class="rounded-2xl overflow-hidden border border-zinc-800 shadow-xl group">
+                        <img src="images/workshop_car_lift.webp" alt="Автомобиль на подъемнике Audi Service" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="p-3 bg-zinc-900/90 text-xs text-zinc-300 font-medium">10 ремонтных подъемников</div>
+                    </div>
+                    <div class="rounded-2xl overflow-hidden border border-zinc-800 shadow-xl group">
+                        <img src="images/workshop_posts.webp" alt="Цех технического обслуживания" class="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="p-3 bg-zinc-900/90 text-xs text-zinc-300 font-medium">Чистая сервисная зона</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section with Real Service Imagery -->
+    <section id="services" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-zinc-800">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+            <div>
+                <span class="text-xs font-mono uppercase tracking-widest text-amber-500">Полный цикл обслуживания</span>
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white mt-2">
+                    Услуги сервисного центра
+                </h2>
+            </div>
+            <p class="text-zinc-400 max-w-md text-sm">
+                От базового регламентного ТО до сложного капитального ремонта агрегатов и восстановления кузова.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Service 1 -->
+            <div class="rounded-2xl bg-zinc-900 border border-zinc-800 overflow-hidden hover:border-zinc-700 transition-all group flex flex-col justify-between">
+                <div>
+                    <div class="h-48 overflow-hidden">
+                        <img src="images/service_maintenance.webp" alt="Плановое техническое обслуживание" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    </div>
+                    <div class="p-6 space-y-3">
+                        <h3 class="text-xl font-bold text-white group-hover:text-amber-400 transition-colors">Плановое ТО</h3>
+                        <p class="text-xs text-zinc-400 leading-relaxed">
+                            Регламентные работы ТО-1, ТО-2, замена моторного масла, фильтров, свечей зажигания, тормозной жидкости и ремней ГРМ по нормам завода.
+                        </p>
+                    </div>
+                </div>
+                <div class="p-6 pt-0 flex justify-between items-center border-t border-zinc-800/60 mt-4">
+                    <span class="text-xs font-semibold text-amber-500">от 2 400 ₽</span>
+                    <button onclick="openBookingModal('Плановое ТО')" class="text-xs text-zinc-300 hover:text-white font-medium flex items-center space-x-1">
+                        <span>Записаться</span>
+                        <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Service 2 -->
+            <div class="rounded-2xl bg-zinc-900 border border-zinc-800 overflow-hidden hover:border-zinc-700 transition-all group flex flex-col justify-between">
+                <div>
+                    <div class="h-48 overflow-hidden">
+                        <img src="images/service_diagnostics.webp" alt="Компьютерная диагностика VAG" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    </div>
+                    <div class="p-6 space-y-3">
+                        <h3 class="text-xl font-bold text-white group-hover:text-amber-400 transition-colors">Компьютерная диагностика</h3>
+                        <p class="text-xs text-zinc-400 leading-relaxed">
+                            Полное сканирование электронных блоков дилерским комплексом ODIS и VAG-COM, адаптация датчиков, сброс сервисных интервалов.
+                        </p>
+                    </div>
+                </div>
+                <div class="p-6 pt-0 flex justify-between items-center border-t border-zinc-800/60 mt-4">
+                    <span class="text-xs font-semibold text-amber-500">от 1 500 ₽</span>
+                    <button onclick="openBookingModal('Компьютерная диагностика')" class="text-xs text-zinc-300 hover:text-white font-medium flex items-center space-x-1">
+                        <span>Записаться</span>
+                        <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Service 3 -->
+            <div class="rounded-2xl bg-zinc-900 border border-zinc-800 overflow-hidden hover:border-zinc-700 transition-all group flex flex-col justify-between">
+                <div>
+                    <div class="h-48 overflow-hidden">
+                        <img src="images/service_repair.webp" alt="Технический ремонт ДВС и КПП" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    </div>
+                    <div class="p-6 space-y-3">
+                        <h3 class="text-xl font-bold text-white group-hover:text-amber-400 transition-colors">Ремонт ДВС и КПП</h3>
+                        <p class="text-xs text-zinc-400 leading-relaxed">
+                            Капитальный ремонт двигателей TSI/TFSI/TDI, обслуживание роботизированных коробок S-Tronic / DSG, гидромеханических АКПП и подвески.
+                        </p>
+                    </div>
+                </div>
+                <div class="p-6 pt-0 flex justify-between items-center border-t border-zinc-800/60 mt-4">
+                    <span class="text-xs font-semibold text-amber-500">от 3 500 ₽</span>
+                    <button onclick="openBookingModal('Ремонт ДВС и КПП')" class="text-xs text-zinc-300 hover:text-white font-medium flex items-center space-x-1">
+                        <span>Записаться</span>
+                        <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Service 4 -->
+            <div class="rounded-2xl bg-zinc-900 border border-zinc-800 overflow-hidden hover:border-zinc-700 transition-all group flex flex-col justify-between">
+                <div>
+                    <div class="h-48 overflow-hidden">
+                        <img src="images/service_bodywork.webp" alt="Кузовной ремонт и покраска" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    </div>
+                    <div class="p-6 space-y-3">
+                        <h3 class="text-xl font-bold text-white group-hover:text-amber-400 transition-colors">Кузовной цех</h3>
+                        <p class="text-xs text-zinc-400 leading-relaxed">
+                            Восстановление геометрии кузова на стапеле, локальная и полная покраска деталей в окрасочно-сушильной камере, удаление вмятин без покраски.
+                        </p>
+                    </div>
+                </div>
+                <div class="p-6 pt-0 flex justify-between items-center border-t border-zinc-800/60 mt-4">
+                    <span class="text-xs font-semibold text-amber-500">от 4 000 ₽</span>
+                    <button onclick="openBookingModal('Кузовной ремонт')" class="text-xs text-zinc-300 hover:text-white font-medium flex items-center space-x-1">
+                        <span>Записаться</span>
+                        <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Service 5 -->
+            <div class="rounded-2xl bg-zinc-900 border border-zinc-800 overflow-hidden hover:border-zinc-700 transition-all group flex flex-col justify-between">
+                <div>
+                    <div class="h-48 overflow-hidden">
+                        <img src="images/service_equipment.webp" alt="Дооснащение и чип-тюнинг" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    </div>
+                    <div class="p-6 space-y-3">
+                        <h3 class="text-xl font-bold text-white group-hover:text-amber-400 transition-colors">Дооснащение и тюнинг</h3>
+                        <p class="text-xs text-zinc-400 leading-relaxed">
+                            Установка мультимедиа MMI, камер заднего вида, систем кругового обзора, парктроников, активация скрытых функций и программный чип-тюнинг.
+                        </p>
+                    </div>
+                </div>
+                <div class="p-6 pt-0 flex justify-between items-center border-t border-zinc-800/60 mt-4">
+                    <span class="text-xs font-semibold text-amber-500">от 3 000 ₽</span>
+                    <button onclick="openBookingModal('Дооснащение')" class="text-xs text-zinc-300 hover:text-white font-medium flex items-center space-x-1">
+                        <span>Записаться</span>
+                        <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Service 6 -->
+            <div class="rounded-2xl bg-zinc-900 border border-zinc-800 overflow-hidden hover:border-zinc-700 transition-all group flex flex-col justify-between">
+                <div>
+                    <div class="h-48 overflow-hidden">
+                        <img src="images/service_detailing.webp" alt="Детейлинг и защитные покрытия" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    </div>
+                    <div class="p-6 space-y-3">
+                        <h3 class="text-xl font-bold text-white group-hover:text-amber-400 transition-colors">Детейлинг и мойка</h3>
+                        <p class="text-xs text-zinc-400 leading-relaxed">
+                            Глубокая полировка кузова, нанесение керамики и жидкого стекла, химчистка салона с разбором, бронирование фар полиуретановой пленкой.
+                        </p>
+                    </div>
+                </div>
+                <div class="p-6 pt-0 flex justify-between items-center border-t border-zinc-800/60 mt-4">
+                    <span class="text-xs font-semibold text-amber-500">от 2 000 ₽</span>
+                    <button onclick="openBookingModal('Детейлинг')" class="text-xs text-zinc-300 hover:text-white font-medium flex items-center space-x-1">
+                        <span>Записаться</span>
+                        <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Infrastructure Bento Grid (10 Advantages from Original Site) -->
+    <section id="advantages" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto bg-zinc-900/30 rounded-3xl border border-zinc-800/80 my-12">
+        <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
+            <span class="text-xs font-mono uppercase tracking-widest text-amber-500">С нами комфортно и надежно</span>
+            <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">Инфраструктура дилерского уровня</h2>
+            <p class="text-zinc-400 text-sm">Все необходимое для качественного обслуживания вашего автомобиля в одном месте.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="p-6 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-2">
+                <div class="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold">10</div>
+                <h4 class="font-bold text-white text-base">Технических постов</h4>
+                <p class="text-xs text-zinc-400">Минимум ожидания — оперативный прием в день обращения.</p>
+            </div>
+            <div class="p-6 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-2">
+                <div class="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold">3D</div>
+                <h4 class="font-bold text-white text-base">Стенд сход-развала</h4>
+                <p class="text-xs text-zinc-400">Новейшая калибровочная база данных всех моделей VAG.</p>
+            </div>
+            <div class="p-6 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-2">
+                <div class="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-amber-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
+                </div>
+                <h4 class="font-bold text-white text-base">Шиномонтажный пост</h4>
+                <p class="text-xs text-zinc-400">Высокоточная балансировка и сезонное хранение колес.</p>
+            </div>
+            <div class="p-6 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-2">
+                <div class="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-amber-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                </div>
+                <h4 class="font-bold text-white text-base">Свой кузовной цех</h4>
+                <p class="text-xs text-zinc-400">Современная камера и восстановление геометрии кузова.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Promotions Section -->
+    <section id="promotions" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div class="flex justify-between items-end mb-12">
+            <div>
+                <span class="text-xs font-mono uppercase tracking-widest text-amber-500">Выгодные условия</span>
+                <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white mt-2">Акции и специальные предложения</h2>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="rounded-2xl bg-zinc-900 border border-zinc-800 p-8 space-y-4 hover:border-zinc-700 transition-colors">
-                <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
-                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-                </div>
-                <h3 class="text-xl font-bold text-white">Ремонт двигателя и КПП</h3>
-                <p class="text-zinc-400 text-sm leading-relaxed">Капитальный и текущий ремонт ДВС, замена ГРМ, ремонт автоматических и механических коробок передач.</p>
+            <div class="p-8 rounded-2xl bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-800 space-y-4 hover:border-amber-500/50 transition-colors">
+                <span class="text-xs font-mono text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded">Действует сейчас</span>
+                <h3 class="text-xl font-bold text-white">Замена тормозной системы</h3>
+                <p class="text-xs text-zinc-400 leading-relaxed">Скидка на оригинальные колодки и тормозные диски при установке в нашем техцентре.</p>
+                <button onclick="openBookingModal('Акция: Тормозная система')" class="text-xs font-semibold text-amber-400 hover:text-amber-300 pt-2 flex items-center space-x-1">
+                    <span>Узнать подробности</span>
+                    <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </button>
             </div>
 
-            <div class="rounded-2xl bg-zinc-900 border border-zinc-800 p-8 space-y-4 hover:border-zinc-700 transition-colors">
-                <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
-                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                </div>
-                <h3 class="text-xl font-bold text-white">Компьютерная диагностика</h3>
-                <p class="text-zinc-400 text-sm leading-relaxed">Поиск и устранение неисправностей электронных блоков управления, датчиков и электропроводки.</p>
+            <div class="p-8 rounded-2xl bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-800 space-y-4 hover:border-amber-500/50 transition-colors">
+                <span class="text-xs font-mono text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded">Бесплатно</span>
+                <h3 class="text-xl font-bold text-white">Электронная диагностика VAG</h3>
+                <p class="text-xs text-zinc-400 leading-relaxed">Компьютерная проверка всех блоков управления при проведении любого планового ТО.</p>
+                <button onclick="openBookingModal('Акция: Электронная диагностика')" class="text-xs font-semibold text-amber-400 hover:text-amber-300 pt-2 flex items-center space-x-1">
+                    <span>Узнать подробности</span>
+                    <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </button>
             </div>
 
-            <div class="rounded-2xl bg-zinc-900 border border-zinc-800 p-8 space-y-4 hover:border-zinc-700 transition-colors">
-                <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
-                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2.1 10.9 2 11.2 2 11.5V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+            <div class="p-8 rounded-2xl bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-800 space-y-4 hover:border-amber-500/50 transition-colors">
+                <span class="text-xs font-mono text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded">Скидка -15%</span>
+                <h3 class="text-xl font-bold text-white">Скидка выходного дня</h3>
+                <p class="text-xs text-zinc-400 leading-relaxed">Запишитесь на сервисные работы в субботу или воскресенье и получите дополнительную выгоду.</p>
+                <button onclick="openBookingModal('Акция: Скидка выходного дня')" class="text-xs font-semibold text-amber-400 hover:text-amber-300 pt-2 flex items-center space-x-1">
+                    <span>Записаться на выходные</span>
+                    <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section (All 12 Real Staff Members with Original Photos) -->
+    <section id="team" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-zinc-800">
+        <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
+            <span class="text-xs font-mono uppercase tracking-widest text-amber-500">Люди, которым вы доверяете</span>
+            <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">Команда профессионалов Audi Service</h2>
+            <p class="text-zinc-400 text-sm">Сертифицированные инженеры, мастера-консультанты и специалисты с многолетним стажем.</p>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- 1 -->
+            <div class="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 text-center space-y-3 group hover:border-zinc-700 transition-all">
+                <img src="images/team_khramkov.webp" alt="Храмков Павел" class="w-24 h-24 rounded-full mx-auto object-cover border-2 border-amber-500/40 group-hover:scale-105 transition-transform">
+                <div>
+                    <h4 class="font-bold text-white text-sm">Храмков Павел</h4>
+                    <p class="text-[11px] text-amber-400 mt-0.5">Руководитель отдела сервиса и з/ч</p>
                 </div>
-                <h3 class="text-xl font-bold text-white">Ходовая часть и тормоза</h3>
-                <p class="text-zinc-400 text-sm leading-relaxed">Замена амортизаторов, сайлентблоков, тормозных колодок и дисков, регулировка сход-развала 3D.</p>
+            </div>
+            <!-- 2 -->
+            <div class="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 text-center space-y-3 group hover:border-zinc-700 transition-all">
+                <img src="images/team_vilkov.webp" alt="Вилков Павел" class="w-24 h-24 rounded-full mx-auto object-cover border-2 border-zinc-700 group-hover:scale-105 transition-transform">
+                <div>
+                    <h4 class="font-bold text-white text-sm">Вилков Павел</h4>
+                    <p class="text-[11px] text-zinc-400 mt-0.5">Начальник цеха общего ремонта</p>
+                </div>
+            </div>
+            <!-- 3 -->
+            <div class="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 text-center space-y-3 group hover:border-zinc-700 transition-all">
+                <img src="images/team_shmidt.webp" alt="Шмидт Юрий" class="w-24 h-24 rounded-full mx-auto object-cover border-2 border-zinc-700 group-hover:scale-105 transition-transform">
+                <div>
+                    <h4 class="font-bold text-white text-sm">Шмидт Юрий</h4>
+                    <p class="text-[11px] text-zinc-400 mt-0.5">Начальник кузовного цеха</p>
+                </div>
+            </div>
+            <!-- 4 -->
+            <div class="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 text-center space-y-3 group hover:border-zinc-700 transition-all">
+                <img src="images/team_tikhomirov.webp" alt="Тихомиров Евгений" class="w-24 h-24 rounded-full mx-auto object-cover border-2 border-zinc-700 group-hover:scale-105 transition-transform">
+                <div>
+                    <h4 class="font-bold text-white text-sm">Тихомиров Евгений</h4>
+                    <p class="text-[11px] text-zinc-400 mt-0.5">Мастер-консультант</p>
+                </div>
+            </div>
+            <!-- 5 -->
+            <div class="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 text-center space-y-3 group hover:border-zinc-700 transition-all">
+                <img src="images/team_savitskiy.webp" alt="Савицкий Дмитрий" class="w-24 h-24 rounded-full mx-auto object-cover border-2 border-zinc-700 group-hover:scale-105 transition-transform">
+                <div>
+                    <h4 class="font-bold text-white text-sm">Савицкий Дмитрий</h4>
+                    <p class="text-[11px] text-zinc-400 mt-0.5">Мастер-консультант</p>
+                </div>
+            </div>
+            <!-- 6 -->
+            <div class="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 text-center space-y-3 group hover:border-zinc-700 transition-all">
+                <img src="images/team_nechaev.webp" alt="Нечаев Михаил" class="w-24 h-24 rounded-full mx-auto object-cover border-2 border-zinc-700 group-hover:scale-105 transition-transform">
+                <div>
+                    <h4 class="font-bold text-white text-sm">Нечаев Михаил</h4>
+                    <p class="text-[11px] text-zinc-400 mt-0.5">Мастер-консультант</p>
+                </div>
+            </div>
+            <!-- 7 -->
+            <div class="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 text-center space-y-3 group hover:border-zinc-700 transition-all">
+                <img src="images/team_marin.webp" alt="Марьин Алексей" class="w-24 h-24 rounded-full mx-auto object-cover border-2 border-zinc-700 group-hover:scale-105 transition-transform">
+                <div>
+                    <h4 class="font-bold text-white text-sm">Марьин Алексей</h4>
+                    <p class="text-[11px] text-zinc-400 mt-0.5">Мастер-консультант</p>
+                </div>
+            </div>
+            <!-- 8 -->
+            <div class="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 text-center space-y-3 group hover:border-zinc-700 transition-all">
+                <img src="images/team_voronetskiy.webp" alt="Воронецкий Евгений" class="w-24 h-24 rounded-full mx-auto object-cover border-2 border-zinc-700 group-hover:scale-105 transition-transform">
+                <div>
+                    <h4 class="font-bold text-white text-sm">Воронецкий Евгений</h4>
+                    <p class="text-[11px] text-zinc-400 mt-0.5">Мастер кузовного цеха</p>
+                </div>
+            </div>
+            <!-- 9 -->
+            <div class="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 text-center space-y-3 group hover:border-zinc-700 transition-all">
+                <img src="images/team_malykhin.webp" alt="Малыхин Андрей" class="w-24 h-24 rounded-full mx-auto object-cover border-2 border-zinc-700 group-hover:scale-105 transition-transform">
+                <div>
+                    <h4 class="font-bold text-white text-sm">Малыхин Андрей</h4>
+                    <p class="text-[11px] text-zinc-400 mt-0.5">Менеджер отдела з/ч</p>
+                </div>
+            </div>
+            <!-- 10 -->
+            <div class="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 text-center space-y-3 group hover:border-zinc-700 transition-all">
+                <img src="images/team_gantsov.webp" alt="Ганцов Александр" class="w-24 h-24 rounded-full mx-auto object-cover border-2 border-zinc-700 group-hover:scale-105 transition-transform">
+                <div>
+                    <h4 class="font-bold text-white text-sm">Ганцов Александр</h4>
+                    <p class="text-[11px] text-zinc-400 mt-0.5">Менеджер отдела з/ч</p>
+                </div>
+            </div>
+            <!-- 11 -->
+            <div class="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 text-center space-y-3 group hover:border-zinc-700 transition-all">
+                <img src="images/team_slobodchikova.webp" alt="Слободчикова Анастасия" class="w-24 h-24 rounded-full mx-auto object-cover border-2 border-zinc-700 group-hover:scale-105 transition-transform">
+                <div>
+                    <h4 class="font-bold text-white text-sm">Слободчикова Анастасия</h4>
+                    <p class="text-[11px] text-zinc-400 mt-0.5">Ассистент сервиса</p>
+                </div>
+            </div>
+            <!-- 12 -->
+            <div class="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 text-center space-y-3 group hover:border-zinc-700 transition-all">
+                <img src="images/team_bondarenko.webp" alt="Бондаренко Светлана" class="w-24 h-24 rounded-full mx-auto object-cover border-2 border-zinc-700 group-hover:scale-105 transition-transform">
+                <div>
+                    <h4 class="font-bold text-white text-sm">Бондаренко Светлана</h4>
+                    <p class="text-[11px] text-zinc-400 mt-0.5">Ассистент сервиса</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Cost Estimator -->
+    <section class="py-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+        <div class="glass-panel rounded-3xl p-8 sm:p-12 border border-zinc-800 shadow-2xl space-y-8">
+            <div class="text-center space-y-2">
+                <span class="text-xs font-mono uppercase tracking-widest text-amber-500">Быстрый расчет</span>
+                <h3 class="text-2xl sm:text-3xl font-bold text-white">Калькулятор предварительной стоимости работ</h3>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-2">Выберите марку</label>
+                    <select id="calc-brand" onchange="updateCalc()" class="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none focus:border-amber-500">
+                        <option value="audi">Audi</option>
+                        <option value="volkswagen">Volkswagen</option>
+                        <option value="skoda">Skoda</option>
+                        <option value="porsche">Porsche</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-2">Тип обслуживания</label>
+                    <select id="calc-service" onchange="updateCalc()" class="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white text-sm focus:outline-none focus:border-amber-500">
+                        <option value="to">Регламентное ТО (масло + фильтры)</option>
+                        <option value="diag">Полная компьютерная диагностика</option>
+                        <option value="brakes">Замена тормозных колодок и дисков</option>
+                        <option value="susp">Диагностика и ремонт подвески</option>
+                        <option value="dsg">Обслуживание коробки DSG / S-Tronic</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="p-6 rounded-2xl bg-zinc-900/90 border border-zinc-800 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div>
+                    <div class="text-xs text-zinc-400">Ориентировочная стоимость (с учетом скидки 20%):</div>
+                    <div id="calc-result" class="text-3xl font-bold font-display text-amber-400">от 3 900 ₽</div>
+                </div>
+                <button onclick="openBookingModal('Расчет в калькуляторе: ' + document.getElementById('calc-result').innerText)" class="px-6 py-3.5 rounded-xl bg-amber-500 text-zinc-950 font-bold text-sm hover:bg-amber-400 transition-all shadow-md">
+                    Зафиксировать цену по акции
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contacts & Map Section -->
+    <section id="contacts" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto border-t border-zinc-800">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div class="lg:col-span-5 space-y-6">
+                <div>
+                    <span class="text-xs font-mono uppercase tracking-widest text-amber-500">Как нас найти</span>
+                    <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white mt-2">Контакты и адрес</h2>
+                </div>
+
+                <div class="space-y-4 text-sm text-zinc-300">
+                    <div class="flex items-start space-x-3">
+                        <svg class="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+                        <div>
+                            <div class="font-semibold text-white">Адрес дилерского центра:</div>
+                            <div>Челябинск, ул. Чичерина, 52</div>
+                            <div class="text-xs text-zinc-400 mt-0.5">Пересечение ул. Чичерина и Университетской набережной</div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start space-x-3">
+                        <svg class="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        <div>
+                            <div class="font-semibold text-white">Телефон сервисной приемки:</div>
+                            <a href="tel:+73512470000" class="text-amber-400 font-bold hover:underline">+7 (351) 247-00-00</a>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start space-x-3">
+                        <svg class="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <div>
+                            <div class="font-semibold text-white">Режим работы:</div>
+                            <div>Понедельник — Воскресенье: с 09:00 до 20:00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button onclick="openBookingModal('Запись через контакты')" class="w-full py-4 rounded-xl bg-amber-500 text-zinc-950 font-bold text-sm hover:bg-amber-400 transition-all shadow-lg">
+                        Записаться на удобное время
+                    </button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-7">
+                <div class="rounded-3xl overflow-hidden border border-zinc-800 h-96 bg-zinc-900 relative shadow-2xl">
+                    <iframe src="https://yandex.ru/map-widget/v1/?ll=61.294100%2C55.176900&z=16&pt=61.294100,55.176900,pm2rdm" width="100%" height="100%" frameborder="0" allowfullscreen="true"></iframe>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer id="contacts" class="border-t border-zinc-800 bg-zinc-950 py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <footer class="border-t border-zinc-800 bg-zinc-950 py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div class="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div class="text-sm text-zinc-400">
-                &copy; 2026 __TITLE__. Все права защищены.
+            <div class="space-y-1 text-xs text-zinc-400">
+                <div class="font-semibold text-zinc-200">ООО «ТТМ-1» | ОГРН 1097447012211 | ИНН 7447159065</div>
+                <div>&copy; 2003—2026 Audi Service Челябинск. Все права защищены.</div>
             </div>
-            <div class="flex items-center space-x-6 text-sm text-zinc-400">
-                <span>Челябинск</span>
-                <span>Ежедневно с 09:00 до 20:00</span>
-                <a href="tel:+73512000000" class="text-amber-500 font-medium hover:underline">+7 (351) 200-00-00</a>
+            <div class="flex items-center space-x-6 text-xs text-zinc-400">
+                <a href="#about" class="hover:text-white">О центре</a>
+                <a href="#services" class="hover:text-white">Услуги</a>
+                <a href="#promotions" class="hover:text-white">Акции</a>
+                <a href="tel:+73512470000" class="text-amber-500 font-bold hover:underline">+7 (351) 247-00-00</a>
             </div>
         </div>
     </footer>
 
-    <!-- Modal Form -->
-    <div id="order-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 max-w-md w-full relative">
-            <button onclick="document.getElementById('order-modal').classList.add('hidden')" class="absolute top-4 right-4 text-zinc-400 hover:text-white text-xl">
+    <!-- Universal Booking Modal -->
+    <div id="booking-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 max-w-md w-full relative shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <button onclick="closeBookingModal()" class="absolute top-5 right-5 text-zinc-400 hover:text-white text-xl w-8 h-8 flex items-center justify-center rounded-full bg-zinc-800 hover:bg-zinc-700">
                 &times;
             </button>
-            <h3 class="text-xl font-bold text-white mb-2">Онлайн запись</h3>
-            <p class="text-sm text-zinc-400 mb-6">Заполните форму и мы подтвердим удобное время.</p>
-            <form onsubmit="event.preventDefault(); alert('Спасибо! Мы перезвоним вам.'); document.getElementById('order-modal').classList.add('hidden');" class="space-y-4">
-                <input type="text" required placeholder="Ваше имя" class="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-amber-500">
-                <input type="tel" required placeholder="Телефон" class="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-amber-500">
-                <button type="submit" class="w-full py-3.5 rounded-lg bg-amber-500 text-zinc-950 font-semibold text-sm hover:bg-amber-400">
+            <div class="mb-6">
+                <span class="text-xs font-mono uppercase tracking-wider text-amber-500">Быстрая запись на сервис</span>
+                <h3 id="modal-title" class="text-2xl font-bold text-white mt-1">Запись на обслуживание</h3>
+                <p class="text-xs text-zinc-400 mt-1">Оставьте контактный телефон, мастер свяжется в течение 5 минут.</p>
+            </div>
+
+            <form onsubmit="handleModalSubmit(event)" class="space-y-4">
+                <input type="hidden" id="modal-context" value="Прямая заявка">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Ваше имя</label>
+                    <input type="text" required placeholder="Иван" class="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-700 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Номер телефона</label>
+                    <input type="tel" required placeholder="+7 (___) ___-__-__" class="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-700 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-amber-500 font-mono">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Марка автомобиля и комментарий</label>
+                    <input type="text" placeholder="Audi A6, замена тормозных дисков" class="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-700 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-amber-500">
+                </div>
+                <div class="flex items-start space-x-2 pt-1">
+                    <input type="checkbox" id="modal-consent" required checked class="mt-1 rounded bg-zinc-950 border-zinc-700 text-amber-500 focus:ring-0">
+                    <label for="modal-consent" class="text-[11px] text-zinc-400 leading-tight">
+                        Я даю согласие на обработку персональных данных и согласен с политикой конфиденциальности.
+                    </label>
+                </div>
+                <button type="submit" class="w-full py-4 rounded-xl bg-amber-500 text-zinc-950 font-bold text-sm hover:bg-amber-400 transition-all shadow-lg active:scale-[0.98]">
                     Подтвердить запись
                 </button>
             </form>
         </div>
     </div>
+
+    <!-- Interactive Scripts -->
+    <script>
+        function openBookingModal(context) {
+            document.getElementById('modal-context').value = context || 'Общая заявка';
+            document.getElementById('booking-modal').classList.remove('hidden');
+        }
+
+        function closeBookingModal() {
+            document.getElementById('booking-modal').classList.add('hidden');
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            alert('Заявка успешно принята! Мастер Audi Service перезвонит вам в течение 5 минут.');
+        }
+
+        function handleModalSubmit(e) {
+            e.preventDefault();
+            alert('Спасибо за запись! Мы зарезервировали время мастера и перезвоним для подтверждения.');
+            closeBookingModal();
+        }
+
+        function updateCalc() {
+            const service = document.getElementById('calc-service').value;
+            const prices = {
+                'to': 'от 3 900 ₽',
+                'diag': 'от 1 500 ₽',
+                'brakes': 'от 2 800 ₽',
+                'susp': 'от 3 200 ₽',
+                'dsg': 'от 5 500 ₽'
+            };
+            document.getElementById('calc-result').innerText = prices[service] || 'от 3 500 ₽';
+        }
+
+        // GSAP Scroll Animations
+        document.addEventListener('DOMContentLoaded', () => {
+            gsap.registerPlugin(ScrollTrigger);
+            gsap.from('header', { y: -50, opacity: 0, duration: 0.8, ease: 'power2.out' });
+        });
+    </script>
 </body>
 </html>
