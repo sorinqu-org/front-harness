@@ -30,7 +30,7 @@ impl BrowserTool {
     }
 
     pub async fn run_audit(&self, target_url: &str) -> Result<AuditReport> {
-        let output = Command::new("node")
+        let output = Command::new("python3")
             .arg(&self.crawler_script)
             .arg(target_url)
             .arg(&self.output_dir)
