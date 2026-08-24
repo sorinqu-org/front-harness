@@ -1,4 +1,5 @@
 pub mod asset_modal;
+pub mod config_modal;
 pub mod dag_tree;
 pub mod diff_modal;
 pub mod help_modal;
@@ -8,6 +9,7 @@ pub mod statusline;
 pub mod stream_view;
 
 pub use asset_modal::render_asset_modal;
+pub use config_modal::render_config_modal;
 pub use dag_tree::render_dag_tree;
 pub use diff_modal::render_diff_modal;
 pub use help_modal::render_help_modal;

@@ -1,6 +1,6 @@
 # FrontHarness
 
-FrontHarness is an event-driven CLI/TUI system for automated frontend generation and deep website redesigns. Built in Rust with Ratatui and Tokio, it features a decoupled Pi agent loop, an interactive LazyVim-style terminal user interface, a multi-provider LLM engine, a Playwright browser crawler, a local MCP multiplexer, and long-term SQLite memory.
+FrontHarness is an event-driven CLI/TUI system for automated frontend generation and deep website redesigns. Built in Rust with Ratatui and Tokio, it features a decoupled Pi agent loop, an interactive LazyVim-style terminal user interface, a live in-TUI configuration editor, a multi-provider LLM engine, a Playwright browser crawler, a local MCP multiplexer, and long-term SQLite memory.
 
 ---
 
@@ -21,7 +21,7 @@ FrontHarness is an event-driven CLI/TUI system for automated frontend generation
 ## Architecture Overview
 
 1. **Pi Core & Event Bus**: Asynchronous message bus (`tokio::sync::broadcast`) that decouples the agent execution engine from the terminal UI.
-2. **LazyVim / OpenCode Style TUI**: Full keyboard navigation using Vim keybindings, real-time token streaming, unified diffs, log inspection, and dynamic statusline.
+2. **LazyVim / OpenCode Style TUI**: Full keyboard navigation using Vim keybindings, in-TUI interactive configuration editor (`c`), real-time token streaming, unified diffs, log inspection, and dynamic statusline.
 3. **Multi-Provider LLM Engine**: OpenAI-compatible client with dynamic `/v1/models` discovery, streaming SSE parser, and normalized reasoning effort levels (`low`, `medium`, `high`, `custom`).
 4. **Browser Crawler & Asset Dumper**: Playwright crawler that captures desktop (1920x1080) and mobile (375x812) screenshots, extracts computed CSS styles and DOM hierarchy, and dumps network assets (SVGs, fonts, stylesheets).
 5. **Multi-Agent DAG Orchestrator**:
@@ -59,9 +59,9 @@ ln -sf ~/.local/bin/frontharness ~/.local/bin/fh
 
 ---
 
-## Configuration
+## Configuration & In-TUI Editing
 
-Create a `.env` file in the project root or configure `~/.config/frontharness/config.yaml`:
+You can edit settings directly in the TUI by pressing `c`, or configure `~/.config/frontharness/config.yaml` / `.env`:
 
 ```ini
 LLM_BASE_URL=https://agentrouter.org/v1
@@ -118,6 +118,7 @@ frontharness config --show
 
 | Keybinding | Action |
 | --- | --- |
+| `c` | **Open Interactive In-TUI Config Editor** (Edit API Keys, Models, Ports, Headless mode) |
 | `Tab` / `Shift+Tab` | Cycle focus between DAG tree, streaming buffer, and logs |
 | `j` / `k` or `Down` / `Up` | Scroll content in active pane |
 | `d` | Open Code Diff viewer modal |

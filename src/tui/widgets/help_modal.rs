@@ -7,7 +7,7 @@ use ratatui::{
 };
 
 pub fn render_help_modal(f: &mut Frame) {
-    let area = centered_rect(60, 50, f.area());
+    let area = centered_rect(65, 55, f.area());
     f.render_widget(Clear, area);
 
     let block = Block::default()
@@ -17,8 +17,9 @@ pub fn render_help_modal(f: &mut Frame) {
         .border_style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD));
 
     let text = vec![
-        Line::from(vec![Span::styled("Tab / Shift+Tab", Style::default().fg(Color::Yellow)), Span::raw(" : Cycle focused pane")]),
+        Line::from(vec![Span::styled("Tab / Shift+Tab", Style::default().fg(Color::Yellow)), Span::raw(" : Cycle focused pane (DAG / Stream / Logs)")]),
         Line::from(vec![Span::styled("j / k or Up/Down", Style::default().fg(Color::Yellow)), Span::raw(" : Scroll active pane buffer")]),
+        Line::from(vec![Span::styled("c", Style::default().fg(Color::Yellow)), Span::raw("               : Edit Configuration (API Keys, Models, Ports)")]),
         Line::from(vec![Span::styled("d", Style::default().fg(Color::Yellow)), Span::raw("               : View code diffs")]),
         Line::from(vec![Span::styled("l", Style::default().fg(Color::Yellow)), Span::raw("               : View full logs modal")]),
         Line::from(vec![Span::styled("a", Style::default().fg(Color::Yellow)), Span::raw("               : View captured screenshots & assets")]),

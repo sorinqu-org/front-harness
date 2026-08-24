@@ -20,7 +20,7 @@ pub fn render_statusline(f: &mut Frame, area: Rect, state: &TuiState) {
         Span::styled(format!(" Model: {} ", state.model_name), info_style),
         Span::styled(format!(" Reasoning: {} ", state.reasoning_effort), info_style),
         Span::styled(format!(" DevServer: {} ", state.dev_server_status), stat_style),
-        Span::styled(" [?: Help | Tab: Pane | q: Quit] ", Style::default().fg(Color::DarkGray)),
+        Span::styled(" [c: Config | d: Diff | l: Logs | m: Memory | ?: Help | q: Quit] ", Style::default().fg(Color::DarkGray)),
     ];
 
     let line = Line::from(spans);

@@ -2,8 +2,8 @@ use crate::core::event_bus::EventBus;
 use crate::tui::keybindings::KeybindingHandler;
 use crate::tui::state::{ActiveModal, TuiState};
 use crate::tui::widgets::{
-    render_asset_modal, render_dag_tree, render_diff_modal, render_help_modal, render_log_modal,
-    render_memory_modal, render_statusline, render_stream_view,
+    render_asset_modal, render_config_modal, render_dag_tree, render_diff_modal, render_help_modal,
+    render_log_modal, render_memory_modal, render_statusline, render_stream_view,
 };
 use anyhow::Result;
 use crossterm::{
@@ -63,6 +63,7 @@ impl TuiApp {
                 // Render Modals
                 match self.state.active_modal {
                     ActiveModal::Help => render_help_modal(f),
+                    ActiveModal::Config => render_config_modal(f, &self.state),
                     ActiveModal::Diff => render_diff_modal(f, ""),
                     ActiveModal::Logs => render_log_modal(f, &self.state),
                     ActiveModal::Assets => render_asset_modal(f, &[]),

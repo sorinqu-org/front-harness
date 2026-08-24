@@ -1,3 +1,4 @@
+use crate::config::settings::Settings;
 use crate::core::events::Event;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -15,6 +16,7 @@ pub enum ActiveModal {
     Logs,
     Assets,
     Memory,
+    Config,
 }
 
 #[derive(Debug, Clone)]
@@ -23,6 +25,15 @@ pub struct DagStep {
     pub name: String,
     pub status: String,
     pub detail: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct ConfigField {
+    pub key: String,
+    pub label: String,
+    pub value: String,
+    pub is_secret: bool,
+    pub description: String,
 }
 
 pub struct TuiState {
@@ -37,10 +48,70 @@ pub struct TuiState {
     pub dev_server_status: String,
     pub scroll_offset: usize,
     pub should_quit: bool,
+
+    // Config editor state
+    pub config_fields: Vec<ConfigField>,
+    pub config_selected_index: usize,
+    pub is_editing_field: bool,
+    pub config_edit_buffer: String,
+    pub config_status_message: Option<String>,
 }
 
 impl TuiState {
     pub fn new(model_name: &str, reasoning_effort: &str) -> Self {
+        let settings = Settings::load().unwrap_or_default();
+        let config_fields = vec![
+            ConfigField {
+                key: "LLM_BASE_URL".into(),
+                label: "LLM Base URL".into(),
+                value: settings.llm.base_url.clone(),
+                is_secret: false,
+                description: "OpenAI-compatible base API endpoint".into(),
+            },
+            ConfigField {
+                key: "LLM_API_KEY".into(),
+                label: "LLM API Key".into(),
+                value: settings.llm.api_key.clone(),
+                is_secret: true,
+                description: "Bearer authentication key for provider".into(),
+            },
+            ConfigField {
+                key: "LLM_MODEL".into(),
+                label: "LLM Model".into(),
+                value: settings.llm.model.clone(),
+                is_secret: false,
+                description: "Target model ID (e.g. gpt-5.6-sol, claude-3-5-sonnet)".into(),
+            },
+            ConfigField {
+                key: "LLM_REASONING_EFFORT".into(),
+                label: "Reasoning Effort".into(),
+                value: settings.llm.reasoning_effort.clone(),
+                is_secret: false,
+                description: "Effort level: low, medium, high, custom".into(),
+            },
+            ConfigField {
+                key: "TAVILY_API_KEY".into(),
+                label: "Tavily API Key".into(),
+                value: settings.search.tavily_api_key.clone().unwrap_or_default(),
+                is_secret: true,
+                description: "Tavily Search API key for web research".into(),
+            },
+            ConfigField {
+                key: "DEV_SERVER_PORT".into(),
+                label: "Dev Server Port".into(),
+                value: settings.browser.dev_server_port.to_string(),
+                is_secret: false,
+                description: "Local port for QA dev server (e.g. 3000)".into(),
+            },
+            ConfigField {
+                key: "BROWSER_HEADLESS".into(),
+                label: "Browser Headless".into(),
+                value: if settings.browser.headless { "true".into() } else { "false".into() },
+                is_secret: false,
+                description: "Run Playwright browser in background (true/false)".into(),
+            },
+        ];
+
         Self {
             focused_pane: FocusedPane::StreamBuffer,
             active_modal: ActiveModal::None,
@@ -59,7 +130,54 @@ impl TuiState {
             dev_server_status: "Stopped".to_string(),
             scroll_offset: 0,
             should_quit: false,
+            config_fields,
+            config_selected_index: 0,
+            is_editing_field: false,
+            config_edit_buffer: String::new(),
+            config_status_message: None,
         }
+    }
+
+    pub fn save_config_fields(&mut self) {
+        let mut settings = Settings::load().unwrap_or_default();
+        let mut env_content = String::new();
+
+        for f in &self.config_fields {
+            env_content.push_str(&format!("{}={}\n", f.key, f.value));
+            match f.key.as_str() {
+                "LLM_BASE_URL" => settings.llm.base_url = f.value.clone(),
+                "LLM_API_KEY" => settings.llm.api_key = f.value.clone(),
+                "LLM_MODEL" => {
+                    settings.llm.model = f.value.clone();
+                    self.model_name = f.value.clone();
+                }
+                "LLM_REASONING_EFFORT" => {
+                    settings.llm.reasoning_effort = f.value.clone();
+                    self.reasoning_effort = f.value.clone();
+                }
+                "TAVILY_API_KEY" => {
+                    settings.search.tavily_api_key = if f.value.is_empty() { None } else { Some(f.value.clone()) };
+                }
+                "DEV_SERVER_PORT" => {
+                    if let Ok(p) = f.value.parse::<u16>() {
+                        settings.browser.dev_server_port = p;
+                    }
+                }
+                "BROWSER_HEADLESS" => {
+                    settings.browser.headless = f.value.to_lowercase() == "true" || f.value == "1";
+                }
+                _ => {}
+            }
+        }
+
+        // Save global config yaml
+        let _ = settings.save_global_config();
+
+        // Also save to .env in current workspace
+        let env_path = settings.workspace_dir.join(".env");
+        let _ = std::fs::write(&env_path, env_content);
+
+        self.config_status_message = Some("Settings saved to config.yaml and .env successfully!".to_string());
     }
 
     pub fn handle_event(&mut self, event: &Event) {
