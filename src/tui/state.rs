@@ -75,7 +75,7 @@ pub struct TuiState {
     pub run_references: String,
     pub run_skills: Vec<SkillItem>,
     pub run_skills_cursor: usize,
-    pub run_input_focus: usize, // 0..7 (0: mode toggle, 1: target/niche, 2: workspace, 3: goal, 4: style, 5: refs, 6: skills, 7: launch button)
+    pub run_input_focus: usize, // 0..7
     pub should_trigger_pipeline: Option<(String, String, Settings)>,
     pub should_trigger_greenfield: Option<(String, String, Settings)>,
 
@@ -88,6 +88,7 @@ pub struct TuiState {
     // Live Dev Server status
     pub is_dev_server_running: bool,
     pub dev_server_port: u16,
+    pub should_toggle_dev_server: bool,
 }
 
 impl TuiState {
@@ -205,6 +206,7 @@ impl TuiState {
 
             is_dev_server_running: false,
             dev_server_port: settings.browser.dev_server_port,
+            should_toggle_dev_server: false,
         }
     }
 

@@ -268,6 +268,9 @@ impl KeybindingHandler {
             (KeyModifiers::NONE, KeyCode::Char('o')) => {
                 Self::open_in_browser(state);
             }
+            (KeyModifiers::NONE, KeyCode::Char('p')) => {
+                state.should_toggle_dev_server = true;
+            }
             (KeyModifiers::NONE, KeyCode::Tab) => {
                 state.focused_pane = match state.focused_pane {
                     FocusedPane::DagTree => FocusedPane::StreamBuffer,
@@ -350,19 +353,28 @@ impl KeybindingHandler {
     }
 
     fn open_in_browser(state: &mut TuiState) {
-        let dist_path = std::path::PathBuf::from(&state.run_workspace_dir).join("dist").join("index.html");
+        let ws_path = std::path::PathBuf::from(&state.run_workspace_dir);
+        let abs_ws = if ws_path.is_absolute() {
+            ws_path
+        } else {
+            std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from(".")).join(ws_path)
+        };
+        let dist_path = abs_ws.join("dist").join("index.html");
+
         if dist_path.exists() {
-            let url = if state.is_dev_server_running {
+            let target = if state.is_dev_server_running {
                 format!("http://localhost:{}", state.dev_server_port)
             } else {
-                format!("file://{}", dist_path.display())
+                let canonical = std::fs::canonicalize(&dist_path).unwrap_or(dist_path);
+                // Canonical path is /home/yuwye/... so file:// + /path becomes file:///home/yuwye/... (valid 3-slash file URI!)
+                format!("file://{}", canonical.display())
             };
             let _ = std::process::Command::new("xdg-open")
-                .arg(&url)
+                .arg(&target)
                 .spawn();
-            state.logs.push(format!("[Browser] Opened {} in default web browser", url));
+            state.logs.push(format!("[Browser] Launched: {}", target));
         } else {
-            state.logs.push("[Browser] Output file dist/index.html does not exist yet. Run generation first.".into());
+            state.logs.push(format!("[Browser] Output file not found: {}", dist_path.display()));
         }
     }
 }

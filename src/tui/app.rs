@@ -1,5 +1,6 @@
 use crate::agents::PipelineOrchestrator;
 use crate::core::event_bus::EventBus;
+use crate::tools::dev_server::DevServerManager;
 use crate::tui::keybindings::KeybindingHandler;
 use crate::tui::state::{ActiveModal, TuiState};
 use crate::tui::widgets::{
@@ -25,6 +26,7 @@ use std::time::Duration;
 pub struct TuiApp {
     state: TuiState,
     event_bus: EventBus,
+    dev_server: Option<DevServerManager>,
 }
 
 impl TuiApp {
@@ -32,6 +34,7 @@ impl TuiApp {
         Self {
             state: TuiState::new(model_name, reasoning_effort),
             event_bus,
+            dev_server: None,
         }
     }
 
@@ -78,6 +81,38 @@ impl TuiApp {
 
             if self.state.should_quit {
                 break;
+            }
+
+            // Toggle DevServer upon pressing 'p'
+            if self.state.should_toggle_dev_server {
+                self.state.should_toggle_dev_server = false;
+                if let Some(mut server) = self.dev_server.take() {
+                    let _ = server.stop().await;
+                    self.state.is_dev_server_running = false;
+                    self.state.dev_server_status = "Stopped".to_string();
+                    self.state.logs.push("[DevServer] Local server stopped.".into());
+                } else {
+                    let ws_path = std::path::PathBuf::from(&self.state.run_workspace_dir);
+                    let abs_ws = if ws_path.is_absolute() {
+                        ws_path
+                    } else {
+                        std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from(".")).join(ws_path)
+                    };
+                    let dist_dir = abs_ws.join("dist");
+                    let _ = std::fs::create_dir_all(&dist_dir);
+                    let mut server = DevServerManager::new(dist_dir, self.state.dev_server_port);
+                    match server.start().await {
+                        Ok(_) => {
+                            self.state.is_dev_server_running = true;
+                            self.state.dev_server_status = format!("Running ({})", self.state.dev_server_port);
+                            self.state.logs.push(format!("[DevServer] Live HTTP server running at http://localhost:{}", self.state.dev_server_port));
+                            self.dev_server = Some(server);
+                        }
+                        Err(e) => {
+                            self.state.logs.push(format!("[DevServer] Failed to start: {}", e));
+                        }
+                    }
+                }
             }
 
             // 1. Redesign Pipeline Trigger
@@ -135,6 +170,10 @@ impl TuiApp {
                 }
                 _ = tokio::time::sleep(Duration::from_millis(30)) => {}
             }
+        }
+
+        if let Some(mut server) = self.dev_server.take() {
+            let _ = server.stop().await;
         }
 
         disable_raw_mode()?;
