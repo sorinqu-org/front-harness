@@ -67,7 +67,7 @@ pub struct TuiState {
     pub run_references: String,
     pub run_skills: Vec<SkillItem>,
     pub run_skills_cursor: usize,
-    pub run_input_focus: usize, // 0: Source, 1: Workspace, 2: Goal, 3: Style, 4: References, 5: Skills, 6: Launch
+    pub run_input_focus: usize, // 0..6 (6 = Launch button)
     pub should_trigger_pipeline: Option<(String, String, Settings)>,
 }
 
@@ -176,6 +176,20 @@ impl TuiState {
             run_input_focus: 0,
             should_trigger_pipeline: None,
         }
+    }
+
+    pub fn reset_for_new_run(&mut self, target_source: &str) {
+        self.stream_buffer.clear();
+        self.scroll_offset = 0;
+        self.current_phase = "Auditing".to_string();
+        self.logs.push(format!("[Pipeline] Launching redesign pipeline for: {}", target_source));
+        self.dag_steps = vec![
+            DagStep { id: "1".into(), name: "1. Audit (Playwright)".into(), status: "RUNNING".into(), detail: format!("Crawling {}", target_source) },
+            DagStep { id: "2".into(), name: "2. Research (Web)".into(), status: "PENDING".into(), detail: "Discover industry patterns".into() },
+            DagStep { id: "3".into(), name: "3. Art Direction".into(), status: "PENDING".into(), detail: "Build tokens & macrostructure".into() },
+            DagStep { id: "4".into(), name: "4. Implementation".into(), status: "PENDING".into(), detail: "Write modern HTML/Tailwind/GSAP".into() },
+            DagStep { id: "5".into(), name: "5. QA & Verification".into(), status: "PENDING".into(), detail: "Playwright local test".into() },
+        ];
     }
 
     pub fn toggle_selected_skill(&mut self) {
@@ -301,6 +315,13 @@ impl TuiState {
             }
             Event::Error { source, message } => {
                 self.logs.push(format!("[ERROR] {}: {}", source, message));
+                // Mark currently running step as failed
+                for s in &mut self.dag_steps {
+                    if s.status == "RUNNING" {
+                        s.status = "FAILED".into();
+                        s.detail = message.clone();
+                    }
+                }
             }
             _ => {}
         }

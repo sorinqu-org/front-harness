@@ -82,8 +82,11 @@ impl TuiApp {
             if let Some((target_source, goal_prompt, settings)) = self.state.should_trigger_pipeline.take() {
                 let bus = self.event_bus.clone();
                 tokio::spawn(async move {
-                    let mut orch = PipelineOrchestrator::new(settings, bus);
-                    let _ = orch.run_redesign_pipeline(&target_source, &goal_prompt).await;
+                    let mut orch = PipelineOrchestrator::new(settings, bus.clone());
+                    let res = orch.run_redesign_pipeline(&target_source, &goal_prompt).await;
+                    if let Err(e) = res {
+                        bus.emit_error("PipelineOrchestrator", &format!("Pipeline failed: {}", e));
+                    }
                 });
             }
 
@@ -95,10 +98,16 @@ impl TuiApp {
                         }
                     }
                 }
-                Ok(bus_event) = bus_receiver.recv() => {
-                    self.state.handle_event(&bus_event);
+                res = bus_receiver.recv() => {
+                    match res {
+                        Ok(bus_event) => {
+                            self.state.handle_event(&bus_event);
+                        }
+                        Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => {}
+                        Err(tokio::sync::broadcast::error::RecvError::Closed) => {}
+                    }
                 }
-                _ = tokio::time::sleep(Duration::from_millis(50)) => {}
+                _ = tokio::time::sleep(Duration::from_millis(30)) => {}
             }
         }
 

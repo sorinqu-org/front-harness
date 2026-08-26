@@ -4,17 +4,17 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, Clear, Paragraph},
+    widgets::{Block, Borders, Clear, Paragraph, Wrap},
     Frame,
 };
 
 pub fn render_new_run_modal(f: &mut Frame, state: &TuiState) {
-    let area = centered_rect(88, 88, f.area());
+    let area = centered_rect(84, 82, f.area());
     f.render_widget(Clear, area);
 
     let block = Block::default()
         .borders(Borders::ALL)
-        .title(" FrontHarness Design Studio & Pipeline Launcher [Tab: Switch | Space: Toggle Skill | Enter: Launch | Esc: Close] ")
+        .title(" FrontHarness Design Studio & Pipeline Launcher [Tab/Down: Next | Space: Toggle | Enter: Select/Launch] ")
         .style(Style::default().bg(Color::Rgb(15, 15, 18)))
         .border_style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD));
 
@@ -24,11 +24,11 @@ pub fn render_new_run_modal(f: &mut Frame, state: &TuiState) {
         .constraints([
             Constraint::Length(3), // 0: Target Source
             Constraint::Length(3), // 1: Workspace Dir
-            Constraint::Length(3), // 2: Business Goal
+            Constraint::Length(4), // 2: Business Goal
             Constraint::Length(3), // 3: Design Style Directives
             Constraint::Length(3), // 4: References
-            Constraint::Length(4), // 5: Skills Matrix Checkboxes
-            Constraint::Length(3), // 6: Action buttons & hints
+            Constraint::Length(5), // 5: Skills Matrix Checkboxes
+            Constraint::Length(3), // 6: Launch Button
         ])
         .split(block.inner(area));
 
@@ -51,6 +51,7 @@ pub fn render_new_run_modal(f: &mut Frame, state: &TuiState) {
     let f2_border = if f2_active { Color::Yellow } else { Color::DarkGray };
     let f2_val = if f2_active { format!("{}_", state.run_goal_prompt) } else { state.run_goal_prompt.clone() };
     let p2 = Paragraph::new(Line::from(vec![Span::styled(format!(" {}", f2_val), Style::default().fg(Color::White))]))
+        .wrap(Wrap { trim: false })
         .block(Block::default().borders(Borders::ALL).title(Span::styled(" 3. Business Goal & Requirements ", Style::default().fg(if f2_active { Color::Yellow } else { Color::Gray }).add_modifier(Modifier::BOLD))).border_style(Style::default().fg(f2_border)));
 
     // Field 3: Design Style Directives (Enforced Aesthetic)
@@ -70,7 +71,10 @@ pub fn render_new_run_modal(f: &mut Frame, state: &TuiState) {
     // Field 5: Skills Matrix Selection Menu
     let f5_active = state.run_input_focus == 5;
     let f5_border = if f5_active { Color::Yellow } else { Color::DarkGray };
-    let mut skill_spans = Vec::new();
+    
+    let mut row1 = Vec::new();
+    let mut row2 = Vec::new();
+
     for (idx, skill) in state.run_skills.iter().enumerate() {
         let is_cursor = f5_active && idx == state.run_skills_cursor;
         let checkbox = if skill.enabled { "[X] " } else { "[ ] " };
@@ -83,31 +87,43 @@ pub fn render_new_run_modal(f: &mut Frame, state: &TuiState) {
             Style::default().fg(Color::DarkGray)
         };
 
-        skill_spans.push(Span::styled(format!("{}{}", checkbox, skill.name), style));
-        skill_spans.push(Span::raw("   "));
+        let span = Span::styled(format!("{}{}", checkbox, skill.name), style);
+        if idx < 4 {
+            row1.push(span);
+            row1.push(Span::raw("   "));
+        } else {
+            row2.push(span);
+            row2.push(Span::raw("   "));
+        }
     }
 
     let skills_p = Paragraph::new(vec![
-        Line::from(skill_spans),
+        Line::from(row1),
+        Line::from(row2),
         Line::from(vec![
-            Span::styled("  Navigate: ", Style::default().fg(Color::Gray)),
+            Span::styled("  Controls: ", Style::default().fg(Color::DarkGray)),
             Span::styled("Left/Right (h/l)", Style::default().fg(Color::Cyan)),
-            Span::styled(" | Toggle: ", Style::default().fg(Color::Gray)),
-            Span::styled("Space", Style::default().fg(Color::Yellow)),
+            Span::styled(" | Toggle: ", Style::default().fg(Color::DarkGray)),
+            Span::styled("Space", Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
+            Span::styled(" | Next Field: ", Style::default().fg(Color::DarkGray)),
+            Span::styled("Down/Tab", Style::default().fg(Color::Cyan)),
         ]),
-    ]).block(Block::default().borders(Borders::ALL).title(Span::styled(" 6. Active Skills Matrix (Mandatory Rules) ", Style::default().fg(if f5_active { Color::Yellow } else { Color::Gray }).add_modifier(Modifier::BOLD))).border_style(Style::default().fg(f5_border)));
+    ]).block(Block::default().borders(Borders::ALL).title(Span::styled(" 6. Active Skills Matrix (Toggle Mandatory Directives) ", Style::default().fg(if f5_active { Color::Yellow } else { Color::Gray }).add_modifier(Modifier::BOLD))).border_style(Style::default().fg(f5_border)));
 
-    // Field 6: Action Footer
-    let footer_line = Line::from(vec![
-        Span::styled(" [Tab / Shift+Tab] ", Style::default().fg(Color::Cyan)),
-        Span::raw("Switch Inputs | "),
-        Span::styled(" [Enter] ", Style::default().bg(Color::Green).fg(Color::Black).add_modifier(Modifier::BOLD)),
-        Span::styled(" Launch Multi-Agent Redesign Pipeline ", Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)),
-        Span::raw(" | "),
-        Span::styled(" [Esc] ", Style::default().fg(Color::DarkGray)),
-        Span::raw("Cancel"),
-    ]);
-    let footer_p = Paragraph::new(footer_line).block(Block::default().borders(Borders::TOP).border_style(Style::default().fg(Color::DarkGray)));
+    // Field 6: Action Button (Launch Pipeline)
+    let f6_active = state.run_input_focus == 6;
+    let btn_style = if f6_active {
+        Style::default().bg(Color::Green).fg(Color::Black).add_modifier(Modifier::BOLD)
+    } else {
+        Style::default().bg(Color::DarkGray).fg(Color::White)
+    };
+
+    let btn_p = Paragraph::new(Line::from(vec![
+        Span::raw("  "),
+        Span::styled(" [ >>> LAUNCH MULTI-AGENT REDESIGN PIPELINE <<< ] ", btn_style),
+        Span::raw("   "),
+        Span::styled("[Esc] Cancel", Style::default().fg(Color::DarkGray)),
+    ])).block(Block::default().borders(Borders::NONE));
 
     f.render_widget(block, area);
     f.render_widget(p0, inner[0]);
@@ -116,5 +132,5 @@ pub fn render_new_run_modal(f: &mut Frame, state: &TuiState) {
     f.render_widget(p3, inner[3]);
     f.render_widget(p4, inner[4]);
     f.render_widget(skills_p, inner[5]);
-    f.render_widget(footer_p, inner[6]);
+    f.render_widget(btn_p, inner[6]);
 }

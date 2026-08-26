@@ -8,16 +8,22 @@ impl KeybindingHandler {
     pub fn handle_key(state: &mut TuiState, key: KeyEvent) {
         // Modal: Design Studio / New Run
         if state.active_modal == ActiveModal::NewRun {
+            // Check for immediate launch shortcut (Ctrl+S or Ctrl+Enter)
+            if key.modifiers.contains(KeyModifiers::CONTROL) && (key.code == KeyCode::Char('s') || key.code == KeyCode::Enter) {
+                Self::trigger_pipeline_launch(state);
+                return;
+            }
+
             match key.code {
                 KeyCode::Esc => {
                     state.active_modal = ActiveModal::None;
                 }
-                KeyCode::Tab => {
-                    state.run_input_focus = (state.run_input_focus + 1) % 6;
+                KeyCode::Tab | KeyCode::Down => {
+                    state.run_input_focus = (state.run_input_focus + 1) % 7;
                 }
-                KeyCode::BackTab => {
+                KeyCode::BackTab | KeyCode::Up => {
                     if state.run_input_focus == 0 {
-                        state.run_input_focus = 5;
+                        state.run_input_focus = 6;
                     } else {
                         state.run_input_focus -= 1;
                     }
@@ -37,28 +43,17 @@ impl KeybindingHandler {
                 KeyCode::Char(' ') if state.run_input_focus == 5 => {
                     state.toggle_selected_skill();
                 }
+                KeyCode::Char(' ') if state.run_input_focus == 6 => {
+                    Self::trigger_pipeline_launch(state);
+                }
                 KeyCode::Enter => {
-                    let source = state.run_target_source.trim().to_string();
-                    let goal = state.run_goal_prompt.trim().to_string();
-                    if !source.is_empty() {
-                        let mut settings = Settings::load().unwrap_or_default();
-                        settings.workspace_dir = std::path::PathBuf::from(&state.run_workspace_dir);
-                        settings.design.style_prompt = state.run_design_style.clone();
-                        settings.design.references = state
-                            .run_references
-                            .split(',')
-                            .map(|s| s.trim().to_string())
-                            .filter(|s| !s.is_empty())
-                            .collect();
-                        settings.design.selected_skills = state
-                            .run_skills
-                            .iter()
-                            .filter(|s| s.enabled)
-                            .map(|s| s.id.to_string())
-                            .collect();
-
-                        state.should_trigger_pipeline = Some((source, goal, settings));
-                        state.active_modal = ActiveModal::None;
+                    if state.run_input_focus == 6 {
+                        Self::trigger_pipeline_launch(state);
+                    } else if state.run_input_focus == 5 {
+                        state.toggle_selected_skill();
+                    } else {
+                        // In input fields 0..4, pressing Enter moves smoothly to the next input field!
+                        state.run_input_focus = (state.run_input_focus + 1) % 7;
                     }
                 }
                 KeyCode::Backspace => {
@@ -212,6 +207,33 @@ impl KeybindingHandler {
                 state.scroll_offset = state.scroll_offset.saturating_sub(1);
             }
             _ => {}
+        }
+    }
+
+    fn trigger_pipeline_launch(state: &mut TuiState) {
+        let source = state.run_target_source.trim().to_string();
+        let goal = state.run_goal_prompt.trim().to_string();
+        if !source.is_empty() {
+            let mut settings = Settings::load().unwrap_or_default();
+            settings.workspace_dir = std::path::PathBuf::from(&state.run_workspace_dir);
+            settings.design.style_prompt = state.run_design_style.clone();
+            settings.design.references = state
+                .run_references
+                .split(',')
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+                .collect();
+            settings.design.selected_skills = state
+                .run_skills
+                .iter()
+                .filter(|s| s.enabled)
+                .map(|s| s.id.to_string())
+                .collect();
+
+            // Reset UI for active run
+            state.reset_for_new_run(&source);
+            state.should_trigger_pipeline = Some((source, goal, settings));
+            state.active_modal = ActiveModal::None;
         }
     }
 }
