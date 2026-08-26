@@ -151,7 +151,7 @@ async fn main() -> anyhow::Result<()> {
 
             println!("[FrontHarness] Starting greenfield generation for: {}", goal);
             let mut orchestrator = PipelineOrchestrator::new(settings.clone(), event_bus.clone());
-            let output = orchestrator.run_redesign_pipeline("https://example.com", &goal).await?;
+            let output = orchestrator.run_greenfield_pipeline(&goal, &goal).await?;
             println!("[FrontHarness] Greenfield generated at: {:?}", output);
         }
         Some(Commands::Models) => {

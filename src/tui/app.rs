@@ -4,7 +4,8 @@ use crate::tui::keybindings::KeybindingHandler;
 use crate::tui::state::{ActiveModal, TuiState};
 use crate::tui::widgets::{
     render_asset_modal, render_config_modal, render_dag_tree, render_diff_modal, render_help_modal,
-    render_log_modal, render_memory_modal, render_new_run_modal, render_statusline, render_stream_view,
+    render_log_modal, render_memory_modal, render_new_run_modal, render_review_modal,
+    render_statusline, render_stream_view,
 };
 use anyhow::Result;
 use crossterm::{
@@ -65,6 +66,7 @@ impl TuiApp {
                 match self.state.active_modal {
                     ActiveModal::Help => render_help_modal(f),
                     ActiveModal::NewRun => render_new_run_modal(f, &self.state),
+                    ActiveModal::Review => render_review_modal(f, &self.state),
                     ActiveModal::Config => render_config_modal(f, &self.state),
                     ActiveModal::Diff => render_diff_modal(f, ""),
                     ActiveModal::Logs => render_log_modal(f, &self.state),
@@ -78,14 +80,38 @@ impl TuiApp {
                 break;
             }
 
-            // Check if a new pipeline run was triggered from within the TUI
+            // 1. Redesign Pipeline Trigger
             if let Some((target_source, goal_prompt, settings)) = self.state.should_trigger_pipeline.take() {
                 let bus = self.event_bus.clone();
                 tokio::spawn(async move {
                     let mut orch = PipelineOrchestrator::new(settings, bus.clone());
                     let res = orch.run_redesign_pipeline(&target_source, &goal_prompt).await;
                     if let Err(e) = res {
-                        bus.emit_error("PipelineOrchestrator", &format!("Pipeline failed: {}", e));
+                        bus.emit_error("PipelineOrchestrator", &format!("Redesign pipeline failed: {}", e));
+                    }
+                });
+            }
+
+            // 2. Greenfield Pipeline Trigger
+            if let Some((niche, goal_prompt, settings)) = self.state.should_trigger_greenfield.take() {
+                let bus = self.event_bus.clone();
+                tokio::spawn(async move {
+                    let mut orch = PipelineOrchestrator::new(settings, bus.clone());
+                    let res = orch.run_greenfield_pipeline(&niche, &goal_prompt).await;
+                    if let Err(e) = res {
+                        bus.emit_error("PipelineOrchestrator", &format!("Greenfield pipeline failed: {}", e));
+                    }
+                });
+            }
+
+            // 3. Refinement Iteration Trigger
+            if let Some((critique, rating, settings)) = self.state.should_trigger_refinement.take() {
+                let bus = self.event_bus.clone();
+                tokio::spawn(async move {
+                    let mut orch = PipelineOrchestrator::new(settings, bus.clone());
+                    let res = orch.run_refinement_iteration(&critique, rating).await;
+                    if let Err(e) = res {
+                        bus.emit_error("PipelineOrchestrator", &format!("Refinement iteration failed: {}", e));
                     }
                 });
             }

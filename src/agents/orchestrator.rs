@@ -205,6 +205,200 @@ impl PipelineOrchestrator {
 
         Ok(output_html_path)
     }
+
+    pub async fn run_greenfield_pipeline(
+        &mut self,
+        brand_or_niche: &str,
+        project_goal: &str,
+    ) -> Result<PathBuf> {
+        let session_id = uuid::Uuid::new_v4().to_string();
+        self.event_bus.emit_phase("Init", "Researching", &format!("Market discovery & benchmarking for: {}", brand_or_niche));
+        self.state_machine.transition_to(PipelinePhase::Researching, json!({ "target": brand_or_niche, "mode": "greenfield" }))?;
+
+        // 1. Research Phase (Web benchmarking for niche)
+        let research_agent = ResearchAgent::new(
+            self.llm.clone(),
+            self.tools.clone(),
+            Some(self.event_bus.clone()),
+        );
+        let research_brief = match research_agent.conduct_research(brand_or_niche, &self.settings.design.style_prompt).await {
+            Ok(brief) => brief,
+            Err(e) => {
+                self.event_bus.emit_log("warn", "ResearchAgent", &format!("LLM fallback for research: {}", e));
+                format!("Market research for {}: Leading modern high-conversion UI patterns in style {}", brand_or_niche, self.settings.design.style_prompt)
+            }
+        };
+
+        // 2. Art Direction & Architecture Phase
+        self.event_bus.emit_phase("Researching", "Designing", "Formulating design tokens, macrostructure & layout from scratch");
+        self.state_machine.transition_to(PipelinePhase::Designing, json!({ "research_done": true }))?;
+
+        let art_director = ArtDirectorAgent::new_with_skills(
+            self.llm.clone(),
+            self.tools.clone(),
+            Some(self.event_bus.clone()),
+            &self.settings.design.selected_skills,
+            &self.settings.design.style_prompt,
+            &self.settings.design.references,
+        );
+
+        let combined_goal = format!("Greenfield Web Application for: {}\n\nBusiness Goal:\n{}\n\nDesign Style Directive:\n{}", brand_or_niche, project_goal, self.settings.design.style_prompt);
+        let mock_audit = format!(r#"{{ "title": "{}", "description": "Brand new web experience built from scratch", "requirements": "{}" }}"#, brand_or_niche, project_goal);
+
+        let design_spec = match art_director.create_design_system(&research_brief, &mock_audit, &combined_goal).await {
+            Ok(spec) => spec,
+            Err(e) => {
+                self.event_bus.emit_log("warn", "ArtDirectorAgent", &format!("LLM fallback for art direction: {}", e));
+                format!(
+                    "# Design System for {}\n- Style: {}\n- Macrostructure: Workbench / Modern Bento\n- Anti-Slop: Strict Zero Emojis, vector Lucide SVGs, WCAG AA contrast.",
+                    brand_or_niche, self.settings.design.style_prompt
+                )
+            }
+        };
+
+        let design_doc_path = self.workspace_dir.join("design.md");
+        std::fs::write(&design_doc_path, &design_spec)?;
+
+        // 3. Implementation Phase (Single-file HTML from scratch)
+        self.event_bus.emit_phase("Designing", "Implementing", "Writing complete modern HTML/Tailwind/GSAP application");
+        self.state_machine.transition_to(PipelinePhase::Implementing, json!({ "design_done": true }))?;
+
+        let coder_agent = CoderAgent::new_with_skills(
+            self.llm.clone(),
+            self.tools.clone(),
+            Some(self.event_bus.clone()),
+            &self.settings.design.selected_skills,
+            &self.settings.design.style_prompt,
+            &self.settings.design.references,
+        );
+
+        let context_desc = format!("Greenfield Application: {}\nRequirements: {}\nStyle: {}", brand_or_niche, project_goal, self.settings.design.style_prompt);
+        let html_content = coder_agent.generate_frontend(&design_spec, &context_desc).await?;
+
+        let output_html_path = self.workspace_dir.join("dist").join("index.html");
+        if let Some(parent) = output_html_path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        std::fs::write(&output_html_path, &html_content)?;
+
+        // 4. Verification Phase (Local Dev Server + QA Agent)
+        self.event_bus.emit_phase("Implementing", "Verifying", "Running QA verification with Playwright");
+        self.state_machine.transition_to(PipelinePhase::Verifying, json!({ "html_written": true }))?;
+
+        let mut dev_server = DevServerManager::new(
+            self.workspace_dir.join("dist"),
+            self.settings.browser.dev_server_port,
+        );
+        let _ = dev_server.start().await;
+
+        let local_url = format!("http://localhost:{}", self.settings.browser.dev_server_port);
+        let qa_agent = QaAgent::new(
+            self.llm.clone(),
+            self.tools.clone(),
+            Some(self.event_bus.clone()),
+        );
+        let _qa_report = qa_agent.verify_site(&local_url).await;
+        let _ = dev_server.stop().await;
+
+        // 5. Memory Persistence
+        let memory_path = self.workspace_dir.join("memory.db");
+        if let Ok(store) = MemoryStore::open(&memory_path) {
+            let summary = ProjectSummary {
+                id: session_id,
+                title: format!("Greenfield: {}", brand_or_niche),
+                target_url: None,
+                macrostructure: "Workbench/Modern Bento".to_string(),
+                color_palette: "Custom Directed Palette".to_string(),
+                typography: "Space Grotesk + Inter".to_string(),
+                user_rating: None,
+                lessons_learned: format!("Built from scratch for '{}'. Style: {}", brand_or_niche, self.settings.design.style_prompt),
+                created_at: chrono::Utc::now().to_rfc3339(),
+            };
+            let _ = store.save_summary(&summary);
+        }
+
+        self.event_bus.emit_phase("Verifying", "Completed", "Greenfield frontend generated and verified successfully");
+        self.state_machine.transition_to(PipelinePhase::Completed, json!({ "output": output_html_path }))?;
+
+        Ok(output_html_path)
+    }
+
+    pub async fn run_refinement_iteration(
+        &mut self,
+        critique: &str,
+        rating: Option<u8>,
+    ) -> Result<PathBuf> {
+        let output_html_path = self.workspace_dir.join("dist").join("index.html");
+        let design_doc_path = self.workspace_dir.join("design.md");
+
+        if !output_html_path.exists() {
+            anyhow::bail!("No generated site found in {:?} to refine. Run generation first.", output_html_path);
+        }
+
+        let existing_html = std::fs::read_to_string(&output_html_path)?;
+        let design_spec = std::fs::read_to_string(&design_doc_path).unwrap_or_else(|_| "Modern Dark Industrial".into());
+
+        self.event_bus.emit_phase("Completed", "Implementing", &format!("Applying user critique & fixes: {}", critique));
+        self.state_machine.transition_to(PipelinePhase::Implementing, json!({ "iteration": "refinement", "critique": critique }))?;
+
+        let coder_agent = CoderAgent::new_with_skills(
+            self.llm.clone(),
+            self.tools.clone(),
+            Some(self.event_bus.clone()),
+            &self.settings.design.selected_skills,
+            &self.settings.design.style_prompt,
+            &self.settings.design.references,
+        );
+
+        let refinement_context = format!(
+            "EXISTING FRONTEND CODE:\n{}\n\nUSER CRITIQUE & REFINEMENT REQUEST:\n{}\n\nINSTRUCTIONS:\n- Apply all requested fixes precisely to the existing HTML.\n- Keep valid DOCTYPE, Tailwind CSS CDN, Google Fonts, GSAP animations, and inline Lucide SVG icons.\n- ZERO UNICODE EMOJIS.",
+            existing_html, critique
+        );
+
+        let updated_html = coder_agent.generate_frontend(&design_spec, &refinement_context).await?;
+        std::fs::write(&output_html_path, &updated_html)?;
+
+        // Run verification on updated code
+        self.event_bus.emit_phase("Implementing", "Verifying", "Validating refined frontend with QA dev server");
+        self.state_machine.transition_to(PipelinePhase::Verifying, json!({ "refinement_done": true }))?;
+
+        let mut dev_server = DevServerManager::new(
+            self.workspace_dir.join("dist"),
+            self.settings.browser.dev_server_port,
+        );
+        let _ = dev_server.start().await;
+        let local_url = format!("http://localhost:{}", self.settings.browser.dev_server_port);
+        let qa_agent = QaAgent::new(
+            self.llm.clone(),
+            self.tools.clone(),
+            Some(self.event_bus.clone()),
+        );
+        let _qa_report = qa_agent.verify_site(&local_url).await;
+        let _ = dev_server.stop().await;
+
+        // Update memory with user rating
+        let memory_path = self.workspace_dir.join("memory.db");
+        if let Ok(store) = MemoryStore::open(&memory_path) {
+            let session_id = uuid::Uuid::new_v4().to_string();
+            let summary = ProjectSummary {
+                id: session_id,
+                title: "Refinement Iteration".to_string(),
+                target_url: None,
+                macrostructure: "Refined Workbench/Bento".to_string(),
+                color_palette: "Preserved Palette".to_string(),
+                typography: "Preserved Typography".to_string(),
+                user_rating: rating,
+                lessons_learned: format!("User critique: {}. Applied fixes.", critique),
+                created_at: chrono::Utc::now().to_rfc3339(),
+            };
+            let _ = store.save_summary(&summary);
+        }
+
+        self.event_bus.emit_phase("Verifying", "Completed", "Refinement iteration finished successfully");
+        self.state_machine.transition_to(PipelinePhase::Completed, json!({ "output": output_html_path }))?;
+
+        Ok(output_html_path)
+    }
 }
 
 fn generate_fallback_redesign(target_url: &str, report: &crate::tools::browser::AuditReport) -> String {

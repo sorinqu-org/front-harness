@@ -10,6 +10,12 @@ pub enum FocusedPane {
     LogBuffer,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RunMode {
+    Redesign,
+    Greenfield,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ActiveModal {
     None,
@@ -20,6 +26,7 @@ pub enum ActiveModal {
     Memory,
     Config,
     NewRun,
+    Review,
 }
 
 #[derive(Debug, Clone)]
@@ -60,6 +67,7 @@ pub struct TuiState {
     pub config_status_message: Option<String>,
 
     // New Run / Design Studio modal state
+    pub run_mode: RunMode,
     pub run_target_source: String,
     pub run_workspace_dir: String,
     pub run_goal_prompt: String,
@@ -67,8 +75,19 @@ pub struct TuiState {
     pub run_references: String,
     pub run_skills: Vec<SkillItem>,
     pub run_skills_cursor: usize,
-    pub run_input_focus: usize, // 0..6 (6 = Launch button)
+    pub run_input_focus: usize, // 0..7 (0: mode toggle, 1: target/niche, 2: workspace, 3: goal, 4: style, 5: refs, 6: skills, 7: launch button)
     pub should_trigger_pipeline: Option<(String, String, Settings)>,
+    pub should_trigger_greenfield: Option<(String, String, Settings)>,
+
+    // Review / Refinement state
+    pub review_rating: u8,
+    pub review_critique: String,
+    pub review_focus: usize, // 0: rating stars, 1: critique text, 2: apply fixes button, 3: finish button
+    pub should_trigger_refinement: Option<(String, Option<u8>, Settings)>,
+    
+    // Live Dev Server status
+    pub is_dev_server_running: bool,
+    pub dev_server_port: u16,
 }
 
 impl TuiState {
@@ -166,6 +185,7 @@ impl TuiState {
             config_status_message: None,
 
             // New Run State
+            run_mode: RunMode::Redesign,
             run_target_source: "https://as-chelyabinsk.ru/".into(),
             run_workspace_dir: "workspace".into(),
             run_goal_prompt: "Повысить конверсию, сделать современный сайт с Bento-сеткой и плавными анимациями".into(),
@@ -175,6 +195,16 @@ impl TuiState {
             run_skills_cursor: 0,
             run_input_focus: 0,
             should_trigger_pipeline: None,
+            should_trigger_greenfield: None,
+
+            // Review state
+            review_rating: 4,
+            review_critique: String::new(),
+            review_focus: 0,
+            should_trigger_refinement: None,
+
+            is_dev_server_running: false,
+            dev_server_port: settings.browser.dev_server_port,
         }
     }
 
@@ -189,6 +219,31 @@ impl TuiState {
             DagStep { id: "3".into(), name: "3. Art Direction".into(), status: "PENDING".into(), detail: "Build tokens & macrostructure".into() },
             DagStep { id: "4".into(), name: "4. Implementation".into(), status: "PENDING".into(), detail: "Write modern HTML/Tailwind/GSAP".into() },
             DagStep { id: "5".into(), name: "5. QA & Verification".into(), status: "PENDING".into(), detail: "Playwright local test".into() },
+        ];
+    }
+
+    pub fn reset_for_greenfield_run(&mut self, brand_or_niche: &str) {
+        self.stream_buffer.clear();
+        self.scroll_offset = 0;
+        self.current_phase = "Researching".to_string();
+        self.logs.push(format!("[Pipeline] Launching Greenfield pipeline for: {}", brand_or_niche));
+        self.dag_steps = vec![
+            DagStep { id: "1".into(), name: "1. Market Research".into(), status: "RUNNING".into(), detail: format!("Benchmarking niche {}", brand_or_niche) },
+            DagStep { id: "2".into(), name: "2. Art Direction & System".into(), status: "PENDING".into(), detail: "Design tokens & architecture".into() },
+            DagStep { id: "3".into(), name: "3. Implementation".into(), status: "PENDING".into(), detail: "Build single-file HTML/Tailwind/GSAP".into() },
+            DagStep { id: "4".into(), name: "4. QA & Verification".into(), status: "PENDING".into(), detail: "Playwright local test".into() },
+        ];
+    }
+
+    pub fn reset_for_refinement_run(&mut self, critique: &str) {
+        self.stream_buffer.clear();
+        self.scroll_offset = 0;
+        self.current_phase = "Implementing".to_string();
+        self.logs.push(format!("[Pipeline] Applying refinement iteration: {}", critique));
+        self.dag_steps = vec![
+            DagStep { id: "1".into(), name: "1. Analyze Critique".into(), status: "DONE".into(), detail: "Parsed user requirements".into() },
+            DagStep { id: "2".into(), name: "2. Coder Refinement".into(), status: "RUNNING".into(), detail: format!("Refining HTML: {}", critique) },
+            DagStep { id: "3".into(), name: "3. QA & Verification".into(), status: "PENDING".into(), detail: "Validating updated DOM".into() },
         ];
     }
 
@@ -275,6 +330,7 @@ impl TuiState {
                 "DEV_SERVER_PORT" => {
                     if let Ok(p) = f.value.parse::<u16>() {
                         settings.browser.dev_server_port = p;
+                        self.dev_server_port = p;
                     }
                 }
                 "BROWSER_HEADLESS" => {
@@ -315,7 +371,6 @@ impl TuiState {
             }
             Event::Error { source, message } => {
                 self.logs.push(format!("[ERROR] {}: {}", source, message));
-                // Mark currently running step as failed
                 for s in &mut self.dag_steps {
                     if s.status == "RUNNING" {
                         s.status = "FAILED".into();
@@ -328,30 +383,71 @@ impl TuiState {
     }
 
     fn update_dag_step_for_phase(&mut self, phase: &str) {
-        match phase {
-            "Auditing" => {
-                if let Some(s) = self.dag_steps.get_mut(0) { s.status = "RUNNING".into(); }
+        if self.dag_steps.len() == 5 {
+            // Standard 5-step Redesign
+            match phase {
+                "Auditing" => {
+                    if let Some(s) = self.dag_steps.get_mut(0) { s.status = "RUNNING".into(); }
+                }
+                "Researching" => {
+                    if let Some(s) = self.dag_steps.get_mut(0) { s.status = "DONE".into(); }
+                    if let Some(s) = self.dag_steps.get_mut(1) { s.status = "RUNNING".into(); }
+                }
+                "Designing" => {
+                    if let Some(s) = self.dag_steps.get_mut(1) { s.status = "DONE".into(); }
+                    if let Some(s) = self.dag_steps.get_mut(2) { s.status = "RUNNING".into(); }
+                }
+                "Implementing" => {
+                    if let Some(s) = self.dag_steps.get_mut(2) { s.status = "DONE".into(); }
+                    if let Some(s) = self.dag_steps.get_mut(3) { s.status = "RUNNING".into(); }
+                }
+                "Verifying" => {
+                    if let Some(s) = self.dag_steps.get_mut(3) { s.status = "DONE".into(); }
+                    if let Some(s) = self.dag_steps.get_mut(4) { s.status = "RUNNING".into(); }
+                }
+                "Completed" => {
+                    if let Some(s) = self.dag_steps.get_mut(4) { s.status = "DONE".into(); }
+                }
+                _ => {}
             }
-            "Researching" => {
-                if let Some(s) = self.dag_steps.get_mut(0) { s.status = "DONE".into(); }
-                if let Some(s) = self.dag_steps.get_mut(1) { s.status = "RUNNING".into(); }
+        } else if self.dag_steps.len() == 4 {
+            // 4-step Greenfield
+            match phase {
+                "Researching" => {
+                    if let Some(s) = self.dag_steps.get_mut(0) { s.status = "RUNNING".into(); }
+                }
+                "Designing" => {
+                    if let Some(s) = self.dag_steps.get_mut(0) { s.status = "DONE".into(); }
+                    if let Some(s) = self.dag_steps.get_mut(1) { s.status = "RUNNING".into(); }
+                }
+                "Implementing" => {
+                    if let Some(s) = self.dag_steps.get_mut(1) { s.status = "DONE".into(); }
+                    if let Some(s) = self.dag_steps.get_mut(2) { s.status = "RUNNING".into(); }
+                }
+                "Verifying" => {
+                    if let Some(s) = self.dag_steps.get_mut(2) { s.status = "DONE".into(); }
+                    if let Some(s) = self.dag_steps.get_mut(3) { s.status = "RUNNING".into(); }
+                }
+                "Completed" => {
+                    if let Some(s) = self.dag_steps.get_mut(3) { s.status = "DONE".into(); }
+                }
+                _ => {}
             }
-            "Designing" => {
-                if let Some(s) = self.dag_steps.get_mut(1) { s.status = "DONE".into(); }
-                if let Some(s) = self.dag_steps.get_mut(2) { s.status = "RUNNING".into(); }
+        } else if self.dag_steps.len() == 3 {
+            // 3-step Refinement
+            match phase {
+                "Implementing" => {
+                    if let Some(s) = self.dag_steps.get_mut(1) { s.status = "RUNNING".into(); }
+                }
+                "Verifying" => {
+                    if let Some(s) = self.dag_steps.get_mut(1) { s.status = "DONE".into(); }
+                    if let Some(s) = self.dag_steps.get_mut(2) { s.status = "RUNNING".into(); }
+                }
+                "Completed" => {
+                    if let Some(s) = self.dag_steps.get_mut(2) { s.status = "DONE".into(); }
+                }
+                _ => {}
             }
-            "Implementing" => {
-                if let Some(s) = self.dag_steps.get_mut(2) { s.status = "DONE".into(); }
-                if let Some(s) = self.dag_steps.get_mut(3) { s.status = "RUNNING".into(); }
-            }
-            "Verifying" => {
-                if let Some(s) = self.dag_steps.get_mut(3) { s.status = "DONE".into(); }
-                if let Some(s) = self.dag_steps.get_mut(4) { s.status = "RUNNING".into(); }
-            }
-            "Completed" => {
-                if let Some(s) = self.dag_steps.get_mut(4) { s.status = "DONE".into(); }
-            }
-            _ => {}
         }
     }
 }

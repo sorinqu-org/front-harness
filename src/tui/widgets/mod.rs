@@ -6,6 +6,7 @@ pub mod help_modal;
 pub mod log_modal;
 pub mod memory_modal;
 pub mod new_run_modal;
+pub mod review_modal;
 pub mod statusline;
 pub mod stream_view;
 
@@ -17,5 +18,6 @@ pub use help_modal::render_help_modal;
 pub use log_modal::render_log_modal;
 pub use memory_modal::render_memory_modal;
 pub use new_run_modal::render_new_run_modal;
+pub use review_modal::render_review_modal;
 pub use statusline::render_statusline;
 pub use stream_view::render_stream_view;
