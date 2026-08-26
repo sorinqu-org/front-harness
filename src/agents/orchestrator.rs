@@ -11,6 +11,7 @@ use crate::tools::base::ToolRegistry;
 use crate::tools::bash_runner::BashRunnerTool;
 use crate::tools::browser::BrowserTool;
 use crate::tools::dev_server::DevServerManager;
+use crate::tools::embedded_scripts::get_template_html;
 use crate::tools::file_system::FileSystemTool;
 use crate::tools::web_search::WebSearchTool;
 use anyhow::Result;
@@ -42,12 +43,8 @@ impl PipelineOrchestrator {
             settings.search.tavily_api_key.clone(),
         )));
 
-        let crawler_script = std::env::current_dir()
-            .unwrap_or_else(|_| PathBuf::from("."))
-            .join("helpers")
-            .join("playwright_crawler.py");
         let audit_dir = ws.join("audit");
-        tools.register(Arc::new(BrowserTool::new(crawler_script, audit_dir)));
+        tools.register(Arc::new(BrowserTool::new(audit_dir)));
 
         Self {
             settings,
@@ -69,14 +66,17 @@ impl PipelineOrchestrator {
         self.state_machine.transition_to(PipelinePhase::Auditing, json!({ "target": target_source }))?;
 
         // 1. Audit Phase (Playwright Crawler)
-        let crawler_script = std::env::current_dir()
-            .unwrap_or_else(|_| PathBuf::from("."))
-            .join("helpers")
-            .join("playwright_crawler.py");
         let audit_dir = self.workspace_dir.join("audit");
-        let audit_tool = BrowserTool::new(crawler_script, audit_dir);
+        let audit_tool = BrowserTool::new(audit_dir);
         
-        let audit_report = audit_tool.run_audit(target_source).await?;
+        let audit_report = match audit_tool.run_audit(target_source).await {
+            Ok(rep) => rep,
+            Err(e) => {
+                let err_msg = format!("Playwright crawler failed: {}", e);
+                self.event_bus.emit_error("PipelineOrchestrator", &err_msg);
+                anyhow::bail!("{}", err_msg);
+            }
+        };
         let audit_json = serde_json::to_string_pretty(&audit_report)?;
 
         // 2. Research Phase
@@ -210,7 +210,7 @@ impl PipelineOrchestrator {
 fn generate_fallback_redesign(target_url: &str, report: &crate::tools::browser::AuditReport) -> String {
     let raw_title = report.site_analysis.get("title").and_then(|t| t.as_str()).unwrap_or("Audi Service Челябинск");
     let clean_title = raw_title.replace('"', "&quot;");
-    let template = include_str!("../../helpers/template.html");
+    let template = get_template_html();
 
     template
         .replace("__TITLE__", &clean_title)

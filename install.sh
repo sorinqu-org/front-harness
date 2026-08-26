@@ -8,7 +8,8 @@ echo "=========================================================="
 
 INSTALL_DIR="${HOME}/.local/bin"
 CONFIG_DIR="${HOME}/.config/frontharness"
-mkdir -p "${INSTALL_DIR}" "${CONFIG_DIR}"
+HELPERS_DIR="${CONFIG_DIR}/helpers"
+mkdir -p "${INSTALL_DIR}" "${CONFIG_DIR}" "${HELPERS_DIR}"
 
 # 1. Dependency checks
 command -v node >/dev/null 2>&1 || { echo "[WARN] Node.js is not installed. Please install Node.js (v18+) for Playwright crawling."; }
@@ -19,10 +20,14 @@ command -v cargo >/dev/null 2>&1 || { echo "[ERROR] Cargo/Rust is required to bu
 echo "[Installer] Compiling FrontHarness release binary..."
 cargo build --release
 
-# 3. Install binary
+# 3. Install binary and helpers
 cp -f target/release/frontharness "${INSTALL_DIR}/frontharness"
 chmod +x "${INSTALL_DIR}/frontharness"
 ln -sf "${INSTALL_DIR}/frontharness" "${INSTALL_DIR}/fh"
+
+if [ -d "helpers" ]; then
+    cp -rf helpers/* "${HELPERS_DIR}/"
+fi
 
 echo "[Installer] Installed binary to ${INSTALL_DIR}/frontharness (alias: ${INSTALL_DIR}/fh)"
 
@@ -60,6 +65,8 @@ llm:
   model: "gpt-5.6-sol"
   reasoning_effort: "high"
   timeout_seconds: 120
+search:
+  provider: "duckduckgo"
 browser:
   headless: true
   dev_server_port: 3000
