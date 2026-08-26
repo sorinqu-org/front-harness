@@ -77,7 +77,7 @@ impl PipelineOrchestrator {
                 anyhow::bail!("{}", err_msg);
             }
         };
-        let audit_json = serde_json::to_string_pretty(&audit_report)?;
+        let audit_json = serde_json::to_string_pretty(&audit_report.site_analysis)?;
 
         // 2. Research Phase
         self.event_bus.emit_phase("Auditing", "Researching", "Gathering references and market patterns");

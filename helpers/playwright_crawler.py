@@ -2,9 +2,18 @@ import asyncio
 import json
 import os
 import sys
-import urllib.request
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse
 from playwright.async_api import async_playwright
+
+TRACKING_DOMAINS = [
+    "mc.yandex.", "yandex.ru/clck", "google-analytics.com", "googletagmanager.com",
+    "facebook.com/tr", "vk.com/rtrg", "top-fwz1.mail.ru", "doubleclick.net",
+    "sync_cookie", "advert.gif"
+]
+
+def is_tracking_url(url: str) -> bool:
+    lower = url.lower()
+    return any(td in lower for td in TRACKING_DOMAINS)
 
 async def crawl(target_input: str, output_dir: str):
     screenshots_dir = os.path.join(output_dir, "screenshots")
@@ -40,6 +49,9 @@ async def crawl(target_input: str, output_dir: str):
         async def on_response(response):
             try:
                 url = response.url
+                if is_tracking_url(url):
+                    return
+
                 status = response.status
                 if 200 <= status < 300:
                     content_type = response.headers.get("content-type", "")
@@ -78,10 +90,10 @@ async def crawl(target_input: str, output_dir: str):
                 print(f"[Crawler] Navigation warning: {e}")
 
         # Smooth scroll down to trigger lazy loading
-        for _ in range(8):
+        for _ in range(6):
             await page.mouse.wheel(0, 800)
-            await page.wait_for_timeout(300)
-        await page.wait_for_timeout(1000)
+            await page.wait_for_timeout(250)
+        await page.wait_for_timeout(800)
 
         # 1. Desktop Screenshot
         desktop_screenshot = os.path.join(screenshots_dir, "desktop_1920x1080.png")
@@ -90,7 +102,7 @@ async def crawl(target_input: str, output_dir: str):
 
         # 2. Mobile Screenshot
         await page.set_viewport_size({"width": 375, "height": 812})
-        await page.wait_for_timeout(500)
+        await page.wait_for_timeout(400)
         mobile_screenshot = os.path.join(screenshots_dir, "mobile_375x812.png")
         await page.screenshot(path=mobile_screenshot, full_page=True)
         print(f"[Crawler] Captured mobile screenshot: {mobile_screenshot}")
@@ -113,33 +125,37 @@ async def crawl(target_input: str, output_dir: str):
             });
 
             document.querySelectorAll('h1, h2, h3, h4').forEach((h) => {
-                headings.push({
-                    tag: h.tagName.toLowerCase(),
-                    text: h.innerText.trim().slice(0, 150)
-                });
+                const txt = h.innerText.trim();
+                if (txt) {
+                    headings.push({
+                        tag: h.tagName.toLowerCase(),
+                        text: txt.slice(0, 150)
+                    });
+                }
             });
 
             const buttons = Array.from(document.querySelectorAll('button, a.btn, .btn, a[href*="tel:"], a[href*="order"]'))
                 .map(b => b.innerText.trim())
                 .filter(t => t.length > 0 && t.length < 50);
 
-            // Images extraction
+            // Images extraction (filtered from tracking pixels)
             const images = [];
             document.querySelectorAll('img').forEach(img => {
-                if (img.src && !img.src.startsWith('data:')) {
-                    images.push({ src: img.src, alt: img.alt || '' });
+                const s = img.src || '';
+                if (s && !s.startsWith('data:') && !s.includes('yandex') && !s.includes('analytics') && !s.includes('pixel')) {
+                    images.push({ src: s, alt: img.alt || '' });
                 }
             });
 
             return {
                 title,
                 metaDescription,
-                fonts: Array.from(fonts).slice(0, 15),
-                colors: Array.from(colors).slice(0, 25),
-                headings: headings.slice(0, 25),
-                buttons: buttons.slice(0, 15),
-                images: images.slice(0, 40),
-                bodyText: document.body.innerText
+                fonts: Array.from(fonts).slice(0, 10),
+                colors: Array.from(colors).slice(0, 15),
+                headings: headings.slice(0, 20),
+                buttons: buttons.slice(0, 12),
+                images: images.slice(0, 30),
+                bodyText: document.body.innerText.slice(0, 8000)
             };
         }""")
 

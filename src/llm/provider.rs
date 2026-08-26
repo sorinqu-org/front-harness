@@ -62,7 +62,17 @@ impl LlmProvider {
             request = request.bearer_auth(&self.config.api_key);
         }
 
-        let response = request.send().await?;
+        let response = match request.send().await {
+            Ok(resp) => resp,
+            Err(e) => {
+                // If stream connect fails, attempt non-streaming fallback
+                if let Some(bus) = event_bus {
+                    bus.emit_log("warn", agent_name, &format!("Streaming request failed ({}), falling back to non-streaming", e));
+                }
+                return self.chat_complete(messages).await;
+            }
+        };
+
         if !response.status().is_success() {
             let status = response.status();
             let err_text = response.text().await.unwrap_or_default();
@@ -74,7 +84,20 @@ impl LlmProvider {
         let mut buffer = String::new();
 
         while let Some(chunk_res) = stream.next().await {
-            let chunk = chunk_res?;
+            let chunk = match chunk_res {
+                Ok(c) => c,
+                Err(e) => {
+                    if !full_response.is_empty() {
+                        if let Some(bus) = event_bus {
+                            bus.emit_log("warn", agent_name, &format!("Stream truncated ({}), using partial response", e));
+                        }
+                        return Ok(full_response);
+                    } else {
+                        return self.chat_complete(messages).await;
+                    }
+                }
+            };
+
             buffer.push_str(&String::from_utf8_lossy(&chunk));
 
             while let Some(pos) = buffer.find('\n') {
@@ -98,6 +121,10 @@ impl LlmProvider {
                     }
                 }
             }
+        }
+
+        if full_response.trim().is_empty() {
+            return self.chat_complete(messages).await;
         }
 
         Ok(full_response)

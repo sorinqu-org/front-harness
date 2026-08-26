@@ -13,28 +13,32 @@ pub struct CoderAgent {
 }
 
 impl CoderAgent {
-    pub fn new(llm: Arc<LlmProvider>, tools: ToolRegistry, event_bus: Option<EventBus>) -> Self {
+    pub fn new(
+        llm: Arc<LlmProvider>,
+        tools: ToolRegistry,
+        event_bus: Option<EventBus>,
+    ) -> Self {
         let system_prompt = SkillRegistry::get_combined_system_prompt(SYSTEM_PROMPT_CODER);
-        let agent = BaseAgent::new("CoderAgent", &system_prompt, llm, tools, event_bus);
-        Self { agent }
+        let base = BaseAgent::new("CoderAgent", &system_prompt, llm, tools, event_bus);
+        Self { agent: base }
     }
 
     pub fn new_with_skills(
         llm: Arc<LlmProvider>,
         tools: ToolRegistry,
         event_bus: Option<EventBus>,
-        enabled_skills: &[String],
-        design_style: &str,
+        skills: &[String],
+        style_prompt: &str,
         references: &[String],
     ) -> Self {
-        let system_prompt = SkillRegistry::build_custom_system_prompt(
+        let custom_system_prompt = SkillRegistry::build_custom_system_prompt(
             SYSTEM_PROMPT_CODER,
-            enabled_skills,
-            design_style,
+            skills,
+            style_prompt,
             references,
         );
-        let agent = BaseAgent::new("CoderAgent", &system_prompt, llm, tools, event_bus);
-        Self { agent }
+        let base = BaseAgent::new("CoderAgent", &custom_system_prompt, llm, tools, event_bus);
+        Self { agent: base }
     }
 
     pub async fn generate_frontend(
@@ -43,13 +47,13 @@ impl CoderAgent {
         original_content: &str,
     ) -> Result<String> {
         let prompt = format!(
-            "Implement a complete, production-ready, single-file modern frontend index.html with embedded Tailwind CSS via CDN, modern Google Fonts, GSAP 3.12 + ScrollTrigger, and inline Lucide SVG vector icons.\n\nDesign System & Directives:\n{}\n\nOriginal Site Content & Structure:\n{}\n\nREQUIREMENTS:\n- Complete runnable HTML document with DOCTYPE, head, responsive meta, CSS styles, semantic tags, and interactive scripts.\n- Smooth scrolling (Lenis or CSS smooth scroll) and GSAP animations.\n- Fully responsive layout from 375px (mobile) to 1920px (desktop).\n- Clear, accessible conversion path: prominent phone call button, quick order modal/form, working interactive accordion or tabs.\n- ZERO UNICODE EMOJIS. Use clean vector SVG icons only.\n- Output ONLY the complete raw HTML code enclosed in ```html ... ``` code block.",
+            "Implement a complete, production-ready, single-file modern frontend index.html with embedded Tailwind CSS via CDN, modern Google Fonts, GSAP 3.12 + ScrollTrigger, and inline Lucide SVG vector icons.\n\nDesign System & Directives:\n{}\n\nOriginal Site Content & Structure:\n{}\n\nREQUIREMENTS:\n- Complete runnable HTML document with <!DOCTYPE html>, <html>, <head>, responsive <meta>, CSS styles, semantic tags, and interactive scripts.\n- Smooth scrolling (Lenis or CSS smooth scroll) and GSAP animations.\n- Fully responsive layout from 375px (mobile) to 1920px (desktop).\n- Clear, accessible conversion path: prominent phone call button, quick order modal/form, working interactive accordion or tabs.\n- ZERO UNICODE EMOJIS. Use clean vector SVG icons only.\n- Output ONLY the complete raw HTML code enclosed in ```html ... ``` code block.",
             design_spec, original_content
         );
 
-        let generated_code = self.agent.run_turn(&prompt, &[]).await?;
+        let generated_code: String = self.agent.run_turn(&prompt, &[]).await?;
         let extracted_html = extract_code_block(&generated_code, "html")
-            .unwrap_or(generated_code);
+            .unwrap_or_else(|| generated_code.clone());
 
         let warnings = StopSlopValidator::audit_code(&extracted_html);
         for w in warnings {
@@ -68,6 +72,8 @@ fn extract_code_block(text: &str, language: &str) -> Option<String> {
         let content_start = start_pos + start_tag.len();
         if let Some(end_pos) = text[content_start..].find("```") {
             return Some(text[content_start..content_start + end_pos].trim().to_string());
+        } else {
+            return Some(text[content_start..].trim().to_string());
         }
     } else if let Some(start_pos) = text.find("```") {
         let content_start = start_pos + 3;
@@ -79,6 +85,8 @@ fn extract_code_block(text: &str, language: &str) -> Option<String> {
         };
         if let Some(end_pos) = text[actual_start..].find("```") {
             return Some(text[actual_start..actual_start + end_pos].trim().to_string());
+        } else {
+            return Some(text[actual_start..].trim().to_string());
         }
     }
     None
